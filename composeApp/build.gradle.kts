@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.compose.material)
+            implementation(compose.materialIconsExtended)
 
             // Se você quiser manter o suporte ao Material 3 (que o Wizard trouxe):
             implementation(libs.compose.material3)

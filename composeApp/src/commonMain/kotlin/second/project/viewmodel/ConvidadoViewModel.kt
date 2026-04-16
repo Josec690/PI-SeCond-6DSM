@@ -1,4 +1,3 @@
-package second.project.viewmodel
 
 package second.project.viewmodel
 
