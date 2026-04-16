@@ -3,43 +3,70 @@ package second.project.ui.veiculos
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import second.project.ui.components.CrudDesign
 import second.project.viewmodel.VeiculoViewModel
 
 @Composable
 fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
     Scaffold(
-        backgroundColor = Color.Black,
+        backgroundColor = CrudDesign.page,
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.limparCampos(); onAddClick() }, backgroundColor = Color(0xFF4A3B8B)) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+            FloatingActionButton(
+                onClick = { viewModel.limparCampos(); onAddClick() },
+                backgroundColor = CrudDesign.primary
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
             }
         }
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Text("Veículos Cadastrados", color = Color.White, style = MaterialTheme.typography.h5)
+    ) { innerPadding ->
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Text("Veículos Cadastrados", color = CrudDesign.textPrimary, style = MaterialTheme.typography.h5)
             Spacer(Modifier.height(16.dp))
 
-            LazyColumn {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(viewModel.listaVeiculos) { veiculo ->
-                    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), backgroundColor = Color(0xFF121212)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = CrudDesign.surface,
+                        shape = CrudDesign.cardShape,
+                        elevation = 6.dp
+                    ) {
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
-                                Text(veiculo.placa, color = Color.White, style = MaterialTheme.typography.h6)
-                                Text("${veiculo.modelo} (${veiculo.cor})", color = Color.Gray)
+                                Text(veiculo.placa, color = CrudDesign.textPrimary, style = MaterialTheme.typography.h6)
+                                Spacer(Modifier.height(2.dp))
+                                Text("${veiculo.modelo} (${veiculo.cor})", color = CrudDesign.textSecondary)
+                                Text("Proprietário: ${veiculo.proprietario}", color = CrudDesign.textSecondary.copy(alpha = 0.8f))
                             }
                             IconButton(onClick = { viewModel.editar(veiculo); onAddClick() }) {
-                                Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White)
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Editar veículo",
+                                    tint = CrudDesign.textPrimary,
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                )
                             }
                             IconButton(onClick = { viewModel.apagar(veiculo.id) }) {
-                                Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFCF6679))
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Apagar veículo",
+                                    tint = CrudDesign.danger,
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                )
                             }
                         }
                     }

@@ -3,8 +3,7 @@ package second.project.ui.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
@@ -12,12 +11,15 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import second.project.ui.components.CrudDesign
 
 @Composable
 fun DashboardScreen(
@@ -30,73 +32,106 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("SeCond", fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                    Text("SeCond", fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, letterSpacing = 1.sp, color = CrudDesign.textPrimary)
                 },
-                backgroundColor = Color(0xFF121212),
-                contentColor = Color.White,
-                elevation = 10.dp
+                backgroundColor = CrudDesign.surfaceAlt,
+                contentColor = CrudDesign.textPrimary,
+                elevation = 8.dp
             )
         },
-        backgroundColor = Color.Black
+        backgroundColor = CrudDesign.page
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Bem-vindo ao SeCond",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            LazyVerticalGrid(
+            // Greeting Section
+            Card(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                backgroundColor = CrudDesign.primary,
+                elevation = 8.dp
             ) {
-                // CARD DE VEÍCULOS
-                item {
-                    MenuCard(
-                        titulo = "Veículos",
-                        icone = Icons.Default.DirectionsCar,
-                        onClick = onNavVeiculos
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    Text(
+                        "Bem-vindo ao SeCond",
+                        color = CrudDesign.textPrimary,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.5.sp
                     )
-                }
-
-                // CARD DE CONVIDADOS
-                item {
-                    MenuCard(
-                        titulo = "Convidados",
-                        icone = Icons.Default.Group,
-                        onClick = onNavConvidados
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Seu portal para uma vida elevada",
+                        color = CrudDesign.textSecondary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.alpha(0.9f)
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
 
+            // Serviços Grid
+            Text(
+                "Serviços Disponíveis",
+                color = CrudDesign.textPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.5.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ServiceCard(
+                    titulo = "Veículos",
+                    icone = Icons.Default.DirectionsCar,
+                    onClick = onNavVeiculos,
+                    modifier = Modifier.weight(1f)
+                )
+                ServiceCard(
+                    titulo = "Convidados",
+                    icone = Icons.Default.Group,
+                    onClick = onNavConvidados,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Bottom Links
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 30.dp),
+                    .padding(vertical = 40.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "Ir para Login",
-                    color = Color(0xFFB39DDB),
+                    color = CrudDesign.textSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable { onNavLogin() }
                 )
                 Text(
                     text = "Ir para Cadastro",
-                    color = Color(0xFFB39DDB),
+                    color = CrudDesign.textSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable { onNavCadastro() }
                 )
@@ -106,33 +141,40 @@ fun DashboardScreen(
 }
 
 @Composable
-fun MenuCard(titulo: String, icone: ImageVector, onClick: () -> Unit) {
+fun ServiceCard(
+    titulo: String,
+    icone: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(140.dp)
+        modifier = modifier
+            .height(120.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() },
-        backgroundColor = Color(0xFF1E1E1E),
-        shape = MaterialTheme.shapes.medium,
+        backgroundColor = CrudDesign.surface,
         elevation = 6.dp
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+                .background(CrudDesign.surface)
         ) {
             Icon(
                 imageVector = icone,
                 contentDescription = titulo,
-                tint = Color(0xFF4A3B8B), // O Roxo da sua marca
-                modifier = Modifier.size(48.dp)
+                tint = CrudDesign.primary,
+                modifier = Modifier.size(40.dp)
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = titulo,
-                color = Color.White,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp
+                color = CrudDesign.textPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
             )
         }
     }

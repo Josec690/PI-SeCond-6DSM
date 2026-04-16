@@ -1,5 +1,12 @@
 package second.project.navigation
 
+object Graph {
+    const val AUTH = "auth_graph"
+    const val APP = "app_graph"
+    const val VEICULOS = "veiculos_graph"
+    const val CONVIDADOS = "convidados_graph"
+}
+
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Cadastro : Screen("cadastro")
