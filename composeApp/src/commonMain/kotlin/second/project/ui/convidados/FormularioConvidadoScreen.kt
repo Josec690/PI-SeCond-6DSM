@@ -32,5 +32,14 @@ fun FormularioConvidadoScreen(viewModel: ConvidadoViewModel, onSaved: () -> Unit
         ) {
             Text("SALVAR CONVIDADO", color = Color.White)
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = { viewModel.limparCampos() },
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
+            Text("LIMPAR CAMPOS", color = Color.White)
+        }
     }
 }

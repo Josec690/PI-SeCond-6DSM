@@ -15,13 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun DashboardScreen(
     onNavVeiculos: () -> Unit,
-    onNavConvidados: () -> Unit
+    onNavConvidados: () -> Unit,
+    onNavLogin: () -> Unit,
+    onNavCadastro: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -51,6 +54,9 @@ fun DashboardScreen(
             )
 
             LazyVerticalGrid(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -72,6 +78,28 @@ fun DashboardScreen(
                         onClick = onNavConvidados
                     )
                 }
+            }
+
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 30.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Ir para Login",
+                    color = Color(0xFFB39DDB),
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable { onNavLogin() }
+                )
+                Text(
+                    text = "Ir para Cadastro",
+                    color = Color(0xFFB39DDB),
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable { onNavCadastro() }
+                )
             }
         }
     }

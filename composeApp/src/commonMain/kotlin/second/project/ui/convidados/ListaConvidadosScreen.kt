@@ -33,6 +33,7 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
                         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(convidado.nome, color = Color.White, style = MaterialTheme.typography.h6)
+                                Text("Telefone: ${convidado.telefone}", color = Color.LightGray)
                                 Text("Local: ${convidado.localAlugado}", color = Color.Gray)
                             }
                             IconButton(onClick = { viewModel.editar(convidado); onAddClick() }) {

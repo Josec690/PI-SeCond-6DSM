@@ -7,7 +7,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 class RepositorioRemoto {
-    private val baseUrl = "https://projeto-second-default-rtdb.firebaseio.com/\n" // TROQUE PELA SUA URL
+    private val baseUrl = "https://projeto-second-default-rtdb.firebaseio.com" // TROQUE PELA SUA URL
 
     // --- MÉTODOS DE VEÍCULOS ---
     suspend fun salvarVeiculo(veiculo: Veiculo) {

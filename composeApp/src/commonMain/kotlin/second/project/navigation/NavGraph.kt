@@ -20,12 +20,33 @@ fun AppNavigation(vViewModel: VeiculoViewModel, cViewModel: ConvidadoViewModel) 
             )
         }
         composable(Screen.Cadastro.route) {
-            CadastroScreen(onBackToLogin = { navController.popBackStack() })
+            CadastroScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Dashboard.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onBackToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Cadastro.route) { inclusive = true }
+                    }
+                }
+            )
         }
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavVeiculos = { navController.navigate(Screen.VeiculoList.route) },
-                onNavConvidados = { navController.navigate(Screen.ConvidadoList.route) }
+                onNavConvidados = { navController.navigate(Screen.ConvidadoList.route) },
+                onNavLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
+                    }
+                },
+                onNavCadastro = {
+                    navController.navigate(Screen.Cadastro.route) {
+                        popUpTo(Screen.Dashboard.route) { inclusive = true }
+                    }
+                }
             )
         }
         // Veículos
