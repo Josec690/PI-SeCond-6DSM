@@ -1,6 +1,5 @@
 package second.project.ui.auth
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,9 +20,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.jetbrains.compose.resources.painterResource
-import second.composeapp.generated.resources.Logo_SeCond_Dark_1
-import second.composeapp.generated.resources.Res
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.crudOutlinedTextFieldColors
 
@@ -41,13 +37,15 @@ fun LoginScreen(onLogin: () -> Unit, onNavigateToCadastro: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(Res.drawable.Logo_SeCond_Dark_1),
-            contentDescription = "Logo SeCond",
-            modifier = Modifier.height(120.dp)
+        // Logo e Titulo
+        Text(
+            "SeCond",
+            color = CrudDesign.primary,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp
         )
-        Spacer(Modifier.height(12.dp))
-
+        Spacer(Modifier.height(8.dp))
         Text(
             "Gestão Segura e Inteligente de Condomínios",
             color = CrudDesign.textSecondary,
