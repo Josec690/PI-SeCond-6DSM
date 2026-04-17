@@ -2,6 +2,8 @@ package second.project.repository
 
 import second.project.model.Veiculo
 import second.project.model.Convidado
+import second.project.model.Encomenda
+import second.project.model.Aviso
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -59,5 +61,61 @@ class RepositorioRemoto {
 
     suspend fun excluirConvidado(id: String) {
         client.delete("$baseUrl/convidados/$id.json")
+    }
+
+    // --- METODOS DE ENCOMENDAS ---
+    suspend fun salvarEncomenda(encomenda: Encomenda) {
+        if (encomenda.id.isEmpty()) {
+            client.post("$baseUrl/encomendas.json") {
+                setBody(encomenda)
+                contentType(ContentType.Application.Json)
+            }
+        } else {
+            client.put("$baseUrl/encomendas/${encomenda.id}.json") {
+                setBody(encomenda)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+
+    suspend fun listarEncomendas(): List<Encomenda> {
+        return try {
+            val resposta: Map<String, Encomenda>? = client.get("$baseUrl/encomendas.json").body()
+            resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun excluirEncomenda(id: String) {
+        client.delete("$baseUrl/encomendas/$id.json")
+    }
+
+    // --- METODOS DE AVISOS ---
+    suspend fun salvarAviso(aviso: Aviso) {
+        if (aviso.id.isEmpty()) {
+            client.post("$baseUrl/avisos.json") {
+                setBody(aviso)
+                contentType(ContentType.Application.Json)
+            }
+        } else {
+            client.put("$baseUrl/avisos/${aviso.id}.json") {
+                setBody(aviso)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+
+    suspend fun listarAvisos(): List<Aviso> {
+        return try {
+            val resposta: Map<String, Aviso>? = client.get("$baseUrl/avisos.json").body()
+            resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun excluirAviso(id: String) {
+        client.delete("$baseUrl/avisos/$id.json")
     }
 }

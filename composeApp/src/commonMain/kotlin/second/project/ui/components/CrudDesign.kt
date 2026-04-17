@@ -1,7 +1,7 @@
 package second.project.ui.components
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults as OutlinedTextFieldDefaultsM3
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -20,13 +20,19 @@ object CrudDesign {
 }
 
 @Composable
-fun crudOutlinedTextFieldColors() = TextFieldDefaults.outlinedTextFieldColors(
-    textColor = CrudDesign.textPrimary,
+fun crudOutlinedTextFieldColors() = OutlinedTextFieldDefaultsM3.colors(
+    focusedTextColor = CrudDesign.textPrimary,
+    unfocusedTextColor = CrudDesign.textPrimary,
+    disabledTextColor = CrudDesign.textPrimary.copy(alpha = 0.5f),
     cursorColor = CrudDesign.textPrimary,
     focusedLabelColor = CrudDesign.textSecondary,
     unfocusedLabelColor = CrudDesign.textSecondary.copy(alpha = 0.85f),
     focusedBorderColor = CrudDesign.primary,
     unfocusedBorderColor = CrudDesign.primary.copy(alpha = 0.35f),
-    backgroundColor = CrudDesign.primary.copy(alpha = 0.08f)
+    focusedContainerColor = CrudDesign.primary.copy(alpha = 0.08f),
+    unfocusedContainerColor = CrudDesign.primary.copy(alpha = 0.08f)
 )
+
+@Composable
+fun crudOutlinedTextFieldColorsM3() = crudOutlinedTextFieldColors()
 

@@ -1,14 +1,21 @@
-package second.project.ui.veiculos
+package second.project.ui.encomendas
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -23,12 +30,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
-import second.project.viewmodel.VeiculoViewModel
+import second.project.viewmodel.EncomendaViewModel
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
-fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
-    val total = viewModel.listaVeiculos.size
-    val ativos = viewModel.listaVeiculos.count { it.ativo }
+fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit) {
+    val total = viewModel.listaEncomendas.size
+    val pendentes = viewModel.listaEncomendas.count { !it.statusRetirada }
     val listState = rememberLazyListState()
 
     Scaffold(
@@ -48,14 +58,14 @@ fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Veículos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text("Gerencie os veículos cadastrados no condomínio.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            Text("Encomendas", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+            Text("Gerencie suas entregas recebidas.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
 
             Spacer(Modifier.height(14.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 SummaryBadge("Total", total.toString(), Modifier.weight(1f))
-                SummaryBadge("Ativos", ativos.toString(), Modifier.weight(1f))
+                SummaryBadge("Pendentes", pendentes.toString(), Modifier.weight(1f))
             }
 
             Spacer(Modifier.height(14.dp))
@@ -67,8 +77,8 @@ fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
                     .padding(6.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StatusTab("Ativos", true, Modifier.weight(1f))
-                StatusTab("Inativos", false, Modifier.weight(1f))
+                StatusTab("Pendentes", true, Modifier.weight(1f))
+                StatusTab("Recebidas", false, Modifier.weight(1f))
             }
 
             Spacer(Modifier.height(14.dp))
@@ -77,49 +87,42 @@ fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
                 modifier = Modifier.weight(1f),
                 state = listState,
                 contentPadding = PaddingValues(bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(viewModel.listaVeiculos) { veiculo ->
-                    val ativo = veiculo.ativo
+                items(viewModel.listaEncomendas) { encomenda ->
+                    val retirada = encomenda.statusRetirada
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
-                        border = BorderStroke(1.dp, if (ativo) CrudDesign.primary.copy(alpha = 0.25f) else CrudDesign.danger.copy(alpha = 0.45f)),
+                        border = BorderStroke(1.dp, if (retirada) CrudDesign.primary.copy(alpha = 0.2f) else CrudDesign.primary.copy(alpha = 0.5f)),
                         shape = CrudDesign.cardShape,
                         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                     ) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
-                                    Text(veiculo.placa, color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
-                                    Text("${veiculo.modelo} (${veiculo.cor})", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+                                    Text(encomenda.destinatarioNome, color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
+                                    Text("Pedido: ${encomenda.codigoRastreio}", color = CrudDesign.textSecondary.copy(alpha = 0.85f), style = MaterialTheme.typography.bodySmall)
                                 }
-                                ChipStatus(if (ativo) "Ativo" else "Inativo", ativo)
+                                ChipStatus(if (retirada) "Retirada" else "Pendente", retirada)
                             }
 
-                            Text(
-                                "Proprietário: ${veiculo.proprietario}",
-                                color = CrudDesign.textSecondary,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                MiniInfo("Transportadora", encomenda.transportadora, Modifier.weight(1f))
+                                MiniInfo("Recebido", encomenda.dataRecebimento, Modifier.weight(1f))
+                            }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Spacer(Modifier.weight(1f))
-                                IconButton(onClick = { viewModel.editar(veiculo); onAddClick() }) {
-                                    Icon(
-                                        Icons.Default.Edit,
-                                        contentDescription = "Editar veículo",
-                                        tint = CrudDesign.textPrimary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
+                                val local = buildString {
+                                    append("Apto ${encomenda.apartamento}")
+                                    if (encomenda.blocoTorre.isNotBlank()) append(" - Bloco/Torre ${encomenda.blocoTorre}")
                                 }
-                                IconButton(onClick = { viewModel.apagar(veiculo.id) }) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Apagar veículo",
-                                        tint = CrudDesign.danger,
-                                        modifier = Modifier.size(22.dp)
-                                    )
+                                Text(local, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                IconButton(onClick = { viewModel.editar(encomenda); onAddClick() }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Editar encomenda", tint = CrudDesign.textPrimary)
+                                }
+                                IconButton(onClick = { viewModel.apagar(encomenda.id) }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Apagar encomenda", tint = CrudDesign.danger)
                                 }
                             }
                         }
@@ -167,6 +170,21 @@ private fun StatusTab(text: String, selected: Boolean, modifier: Modifier = Modi
 }
 
 @Composable
+private fun MiniInfo(label: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = CrudDesign.primary.copy(alpha = 0.12f)),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+            Text(label, color = CrudDesign.textSecondary.copy(alpha = 0.75f), style = MaterialTheme.typography.bodySmall)
+            Text(value.ifBlank { "-" }, color = CrudDesign.textPrimary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
 private fun ChipStatus(text: String, positive: Boolean) {
     Card(
         colors = CardDefaults.cardColors(
@@ -184,3 +202,6 @@ private fun ChipStatus(text: String, positive: Boolean) {
         )
     }
 }
+
+
+

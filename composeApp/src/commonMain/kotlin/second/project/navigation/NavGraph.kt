@@ -5,9 +5,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import second.project.ui.auth.*
-import second.project.ui.dashboard.DashboardScreen
-import second.project.ui.veiculos.*
+import second.project.ui.avisos.*
 import second.project.ui.convidados.*
+import second.project.ui.dashboard.DashboardScreen
+import second.project.ui.encomendas.*
+import second.project.ui.veiculos.*
 import second.project.viewmodel.*
 
 private fun NavHostController.navigateSingleTopTo(route: String) {
@@ -15,7 +17,12 @@ private fun NavHostController.navigateSingleTopTo(route: String) {
 }
 
 @Composable
-fun AppNavigation(vViewModel: VeiculoViewModel, cViewModel: ConvidadoViewModel) {
+fun AppNavigation(
+    vViewModel: VeiculoViewModel,
+    cViewModel: ConvidadoViewModel,
+    eViewModel: EncomendaViewModel,
+    aViewModel: AvisoViewModel
+) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Graph.AUTH) {
@@ -50,18 +57,13 @@ fun AppNavigation(vViewModel: VeiculoViewModel, cViewModel: ConvidadoViewModel) 
                 DashboardScreen(
                     onNavVeiculos = { navController.navigateSingleTopTo(Graph.VEICULOS) },
                     onNavConvidados = { navController.navigateSingleTopTo(Graph.CONVIDADOS) },
-                    onNavLogin = {
+                    onNavEncomendas = { navController.navigateSingleTopTo(Graph.ENCOMENDAS) },
+                    onNavAvisos = { navController.navigateSingleTopTo(Graph.AVISOS) },
+                    onLogout = {
                         navController.navigate(Graph.AUTH) {
                             popUpTo(Graph.APP) { inclusive = true }
                             launchSingleTop = true
                         }
-                    },
-                    onNavCadastro = {
-                        navController.navigate(Graph.AUTH) {
-                            popUpTo(Graph.APP) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                        navController.navigateSingleTopTo(Screen.Cadastro.route)
                     }
                 )
             }
@@ -85,6 +87,28 @@ fun AppNavigation(vViewModel: VeiculoViewModel, cViewModel: ConvidadoViewModel) 
 
                 composable(Screen.ConvidadoForm.route) {
                     FormularioConvidadoScreen(cViewModel) { navController.popBackStack() }
+                }
+            }
+
+            navigation(startDestination = Screen.EncomendaList.route, route = Graph.ENCOMENDAS) {
+                composable(Screen.EncomendaList.route) {
+                    LaunchedEffect(Unit) { eViewModel.carregar() }
+                    ListaEncomendasScreen(eViewModel) { navController.navigateSingleTopTo(Screen.EncomendaForm.route) }
+                }
+
+                composable(Screen.EncomendaForm.route) {
+                    FormularioEncomendaScreen(eViewModel) { navController.popBackStack() }
+                }
+            }
+
+            navigation(startDestination = Screen.AvisoList.route, route = Graph.AVISOS) {
+                composable(Screen.AvisoList.route) {
+                    LaunchedEffect(Unit) { aViewModel.carregar() }
+                    ListaAvisosScreen(aViewModel) { navController.navigateSingleTopTo(Screen.AvisoForm.route) }
+                }
+
+                composable(Screen.AvisoForm.route) {
+                    FormularioAvisoScreen(aViewModel) { navController.popBackStack() }
                 }
             }
         }

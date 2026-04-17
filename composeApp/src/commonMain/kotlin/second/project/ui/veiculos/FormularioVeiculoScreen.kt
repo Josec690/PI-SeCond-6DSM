@@ -1,11 +1,21 @@
 package second.project.ui.veiculos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.crudOutlinedTextFieldColors
@@ -17,16 +27,23 @@ fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit) {
         Modifier
             .fillMaxSize()
             .background(CrudDesign.page)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
+        ,
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        Text("Gestão de Veículos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+        Text("Cadastre ou atualize os veículos do condomínio.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+
         Card(
             modifier = Modifier.fillMaxWidth(),
-            backgroundColor = CrudDesign.surface,
+            colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
             shape = CrudDesign.cardShape,
-            elevation = 8.dp
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(Modifier.padding(20.dp)) {
-                Text("Gerenciar Veículo", color = CrudDesign.textPrimary, style = MaterialTheme.typography.h5)
+                Text("Dados do Veículo", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge)
+                Text("Mantenha os dados do veículo sempre atualizados.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.height(20.dp))
 
                 OutlinedTextField(
@@ -77,7 +94,7 @@ fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit) {
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = CrudDesign.primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
                 ) {
                     Text("GRAVAR", color = CrudDesign.textPrimary)
                 }
@@ -90,7 +107,6 @@ fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit) {
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                    border = ButtonDefaults.outlinedBorder.copy(width = 1.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = CrudDesign.textSecondary)
                 ) {
                     Text("LIMPAR CAMPOS")
