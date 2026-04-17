@@ -19,13 +19,22 @@ O projeto utiliza tecnologias como:
 - Kotlin Multiplatform
 - Jetpack Compose
 - Ktor Client
-- Navigation 3
+- Kotlin Serialization
+- Navigation Compose
 - Material Icons
 
 Atualmente o sistema está organizado com foco em dois CRUDs principais:
-- Veículos
+- Avisos
 - Convidados
+- Encomendas
+- Veículos
 
+### Tema da interface
+- O menu lateral possui um **Switch** para alternar entre tema claro e escuro.
+- A preferencia de tema e **persistida no dispositivo** e mantida apos reiniciar o app.
+- Comportamento atual: tema escuro como padrao inicial.
+
+  
 ## 🚀 Instalação e Execução
 
 ### Pré-requisitos
