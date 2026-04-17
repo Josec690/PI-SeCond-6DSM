@@ -1,6 +1,5 @@
 package second.project.ui.avisos
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,13 +25,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
 import second.project.viewmodel.AvisoViewModel
 
@@ -41,15 +49,36 @@ fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit) {
     val total = viewModel.listaAvisos.size
     val urgentes = viewModel.listaAvisos.count { it.prioridade }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var filtroSelecionado by rememberSaveable { mutableStateOf(0) }
+    val listaFiltrada by remember(viewModel.listaAvisos, filtroSelecionado) {
+        androidx.compose.runtime.derivedStateOf {
+            when (filtroSelecionado) {
+                1 -> viewModel.listaAvisos.filter { it.prioridade }
+                2 -> viewModel.listaAvisos.filter { it.categoria.contains("evento", ignoreCase = true) }
+                else -> viewModel.listaAvisos
+            }
+        }
+    }
 
     Scaffold(
         containerColor = CrudDesign.page,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.limparCampos(); onAddClick() },
-                containerColor = CrudDesign.primary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.End) {
+                if (listState.firstVisibleItemIndex > 0) {
+                    FloatingActionButton(
+                        onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                        containerColor = CrudDesign.surfaceAlt
+                    ) {
+                        Text("↑", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                FloatingActionButton(
+                    onClick = { viewModel.limparCampos(); onAddClick() },
+                    containerColor = CrudDesign.primary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+                }
             }
         }
     ) { innerPadding ->
@@ -71,16 +100,26 @@ fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit) {
 
             Spacer(Modifier.height(14.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(CrudDesign.primary.copy(alpha = 0.14f), RoundedCornerShape(12.dp))
-                    .padding(6.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            TabRow(
+                selectedTabIndex = filtroSelecionado,
+                containerColor = CrudDesign.surfaceAlt,
+                contentColor = CrudDesign.textPrimary
             ) {
-                FilterChip("Todos", true, Modifier.weight(1f))
-                FilterChip("Urgente", false, Modifier.weight(1f))
-                FilterChip("Eventos", false, Modifier.weight(1f))
+                Tab(
+                    selected = filtroSelecionado == 0,
+                    onClick = { filtroSelecionado = 0 },
+                    text = { Text("Todos", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = filtroSelecionado == 1,
+                    onClick = { filtroSelecionado = 1 },
+                    text = { Text("Urgente", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = filtroSelecionado == 2,
+                    onClick = { filtroSelecionado = 2 },
+                    text = { Text("Eventos", fontWeight = FontWeight.Bold) }
+                )
             }
 
             Spacer(Modifier.height(14.dp))
@@ -91,7 +130,7 @@ fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit) {
                 contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(viewModel.listaAvisos) { aviso ->
+                items(listaFiltrada) { aviso ->
                     val urgente = aviso.prioridade
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -165,25 +204,6 @@ private fun QuickCounter(label: String, value: String, modifier: Modifier = Modi
     }
 }
 
-@Composable
-private fun FilterChip(text: String, active: Boolean, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = if (active) CrudDesign.primary.copy(alpha = 0.45f) else CrudDesign.surfaceAlt
-        ),
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Text(
-            text,
-            color = if (active) CrudDesign.textPrimary else CrudDesign.textSecondary,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 10.dp)
-        )
-    }
-}
 
 @Composable
 private fun AlertChip(text: String, urgent: Boolean) {
@@ -203,6 +223,4 @@ private fun AlertChip(text: String, urgent: Boolean) {
         )
     }
 }
-
-
 

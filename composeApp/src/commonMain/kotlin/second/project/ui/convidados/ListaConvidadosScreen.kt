@@ -2,6 +2,7 @@ package second.project.ui.convidados
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,12 +17,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
 import second.project.viewmodel.ConvidadoViewModel
 
@@ -30,15 +40,35 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
     val total = viewModel.listaConvidados.size
     val ativos = viewModel.listaConvidados.count { it.ativo }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
+    val listaFiltrada by remember(viewModel.listaConvidados, selectedTab) {
+        androidx.compose.runtime.derivedStateOf {
+            when (selectedTab) {
+                0 -> viewModel.listaConvidados.filter { it.ativo }
+                else -> viewModel.listaConvidados.filter { !it.ativo }
+            }
+        }
+    }
 
     Scaffold(
         containerColor = CrudDesign.page,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.limparCampos(); onAddClick() },
-                containerColor = CrudDesign.primary
-            ) {
-                Icon(Icons.Default.PersonAdd, contentDescription = null, tint = CrudDesign.textPrimary)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.End) {
+                if (listState.firstVisibleItemIndex > 0) {
+                    FloatingActionButton(
+                        onClick = { scope.launch { listState.animateScrollToItem(0) } },
+                        containerColor = CrudDesign.surfaceAlt
+                    ) {
+                        Text("↑", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                FloatingActionButton(
+                    onClick = { viewModel.limparCampos(); onAddClick() },
+                    containerColor = CrudDesign.primary
+                ) {
+                    Icon(Icons.Default.PersonAdd, contentDescription = null, tint = CrudDesign.textPrimary)
+                }
             }
         }
     ) { innerPadding ->
@@ -60,15 +90,21 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
 
             Spacer(Modifier.height(14.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(CrudDesign.primary.copy(alpha = 0.14f), RoundedCornerShape(12.dp))
-                    .padding(6.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = CrudDesign.surfaceAlt,
+                contentColor = CrudDesign.textPrimary
             ) {
-                StatusTab("Ativos", true, Modifier.weight(1f))
-                StatusTab("Inativos", false, Modifier.weight(1f))
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Ativos", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Inativos", fontWeight = FontWeight.Bold) }
+                )
             }
 
             Spacer(Modifier.height(14.dp))
@@ -79,7 +115,7 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
                 contentPadding = PaddingValues(bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(viewModel.listaConvidados) { convidado ->
+                items(listaFiltrada) { convidado ->
                     val ativo = convidado.ativo
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -94,7 +130,11 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
                                     Text(convidado.nome, color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
                                     Text("Telefone: ${convidado.telefone}", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
                                 }
-                                ChipStatus(if (ativo) "Ativo" else "Inativo", ativo)
+                                ChipStatus(
+                                    text = if (ativo) "Ativo" else "Inativo",
+                                    positive = ativo,
+                                    onClick = { viewModel.alternarStatus(convidado) }
+                                )
                             }
 
                             Text(
@@ -146,29 +186,11 @@ private fun SummaryBadge(label: String, value: String, modifier: Modifier = Modi
     }
 }
 
-@Composable
-private fun StatusTab(text: String, selected: Boolean, modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) CrudDesign.primary.copy(alpha = 0.45f) else CrudDesign.surfaceAlt
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Text(
-            text = text,
-            color = if (selected) CrudDesign.textPrimary else CrudDesign.textSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 10.dp)
-        )
-    }
-}
 
 @Composable
-private fun ChipStatus(text: String, positive: Boolean) {
+private fun ChipStatus(text: String, positive: Boolean, onClick: () -> Unit) {
     Card(
+        modifier = Modifier.clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = if (positive) CrudDesign.primary.copy(alpha = 0.2f) else CrudDesign.danger.copy(alpha = 0.2f)
         ),

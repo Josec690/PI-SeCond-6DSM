@@ -39,6 +39,13 @@ class VeiculoViewModel(private val repo: RepositorioRemoto) {
         }
     }
 
+    fun alternarStatus(v: Veiculo) {
+        scope.launch {
+            repo.salvarVeiculo(v.copy(ativo = !v.ativo))
+            carregar()
+        }
+    }
+
     fun editar(v: Veiculo) {
         id = v.id; placa = v.placa; modelo = v.modelo; cor = v.cor; proprietario = v.proprietario; ativo = v.ativo
     }

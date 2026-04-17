@@ -40,6 +40,13 @@ class ConvidadoViewModel(private val repo: RepositorioRemoto) {
         }
     }
 
+    fun alternarStatus(c: Convidado) {
+        scope.launch {
+            repo.salvarConvidado(c.copy(ativo = !c.ativo))
+            carregar()
+        }
+    }
+
     fun editar(c: Convidado) {
         id = c.id; nome = c.nome; telefone = c.telefone; email = c.email; localAlugado = c.localAlugado; ativo = c.ativo
     }
