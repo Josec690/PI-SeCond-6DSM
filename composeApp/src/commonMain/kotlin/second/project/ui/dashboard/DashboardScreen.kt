@@ -22,6 +22,8 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +48,8 @@ fun DashboardScreen(
     onNavConvidados: () -> Unit,
     onNavEncomendas: () -> Unit,
     onNavAvisos: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     onLogout: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = androidx.compose.material3.DrawerValue.Closed)
@@ -98,6 +102,37 @@ fun DashboardScreen(
                     DrawerItem("Convidados", Icons.Default.Group) { navigateAndClose(onNavConvidados) }
                     DrawerItem("Encomendas", Icons.Default.LocalShipping) { navigateAndClose(onNavEncomendas) }
                     DrawerItem("Avisos", Icons.Default.Notifications) { navigateAndClose(onNavAvisos) }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Theme Switch
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp)
+                            .height(56.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Modo Escuro",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = CrudDesign.textPrimary
+                        )
+                        Switch(
+                            checked = isDarkTheme,
+                            onCheckedChange = { newValue ->
+                                navigateAndClose(onToggleTheme)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = CrudDesign.primary,
+                                checkedTrackColor = CrudDesign.primary.copy(alpha = 0.5f),
+                                uncheckedThumbColor = CrudDesign.textSecondary,
+                                uncheckedTrackColor = CrudDesign.primary.copy(alpha = 0.18f)
+                            )
+                        )
+                    }
 
                     Spacer(modifier = Modifier.weight(1f))
 

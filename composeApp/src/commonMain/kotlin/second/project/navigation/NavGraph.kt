@@ -21,7 +21,9 @@ fun AppNavigation(
     vViewModel: VeiculoViewModel,
     cViewModel: ConvidadoViewModel,
     eViewModel: EncomendaViewModel,
-    aViewModel: AvisoViewModel
+    aViewModel: AvisoViewModel,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
 
@@ -59,6 +61,8 @@ fun AppNavigation(
                     onNavConvidados = { navController.navigateSingleTopTo(Graph.CONVIDADOS) },
                     onNavEncomendas = { navController.navigateSingleTopTo(Graph.ENCOMENDAS) },
                     onNavAvisos = { navController.navigateSingleTopTo(Graph.AVISOS) },
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
                     onLogout = {
                         navController.navigate(Graph.AUTH) {
                             popUpTo(Graph.APP) { inclusive = true }
