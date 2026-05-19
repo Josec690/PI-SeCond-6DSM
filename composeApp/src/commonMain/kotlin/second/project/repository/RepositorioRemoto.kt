@@ -4,6 +4,9 @@ import second.project.model.Veiculo
 import second.project.model.Convidado
 import second.project.model.Encomenda
 import second.project.model.Aviso
+import second.project.model.Documento
+import second.project.model.Prestador
+import second.project.model.Reserva
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -30,7 +33,7 @@ class RepositorioRemoto {
         return try {
             val resposta: Map<String, Veiculo>? = client.get("$baseUrl/veiculos.json").body()
             resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
-        } catch (e: Exception) { emptyList() }
+        } catch (_: Exception) { emptyList() }
     }
 
     suspend fun excluirVeiculo(id: String) {
@@ -56,7 +59,7 @@ class RepositorioRemoto {
         return try {
             val resposta: Map<String, Convidado>? = client.get("$baseUrl/convidados.json").body()
             resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
-        } catch (e: Exception) { emptyList() }
+        } catch (_: Exception) { emptyList() }
     }
 
     suspend fun excluirConvidado(id: String) {
@@ -82,7 +85,7 @@ class RepositorioRemoto {
         return try {
             val resposta: Map<String, Encomenda>? = client.get("$baseUrl/encomendas.json").body()
             resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
@@ -110,12 +113,96 @@ class RepositorioRemoto {
         return try {
             val resposta: Map<String, Aviso>? = client.get("$baseUrl/avisos.json").body()
             resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             emptyList()
         }
     }
 
     suspend fun excluirAviso(id: String) {
         client.delete("$baseUrl/avisos/$id.json")
+    }
+
+    // --- METODOS DE RESERVAS ---
+    suspend fun salvarReserva(reserva: Reserva) {
+        if (reserva.id.isEmpty()) {
+            client.post("$baseUrl/reservas.json") {
+                setBody(reserva)
+                contentType(ContentType.Application.Json)
+            }
+        } else {
+            client.put("$baseUrl/reservas/${reserva.id}.json") {
+                setBody(reserva)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+
+    suspend fun listarReservas(): List<Reserva> {
+        return try {
+            val resposta: Map<String, Reserva>? = client.get("$baseUrl/reservas.json").body()
+            resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun excluirReserva(id: String) {
+        client.delete("$baseUrl/reservas/$id.json")
+    }
+
+    // --- METODOS DE PRESTADORES ---
+    suspend fun salvarPrestador(prestador: Prestador) {
+        if (prestador.id.isEmpty()) {
+            client.post("$baseUrl/prestadores.json") {
+                setBody(prestador)
+                contentType(ContentType.Application.Json)
+            }
+        } else {
+            client.put("$baseUrl/prestadores/${prestador.id}.json") {
+                setBody(prestador)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+
+    suspend fun listarPrestadores(): List<Prestador> {
+        return try {
+            val resposta: Map<String, Prestador>? = client.get("$baseUrl/prestadores.json").body()
+            resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun excluirPrestador(id: String) {
+        client.delete("$baseUrl/prestadores/$id.json")
+    }
+
+    // --- METODOS DE DOCUMENTOS ---
+    suspend fun salvarDocumento(documento: Documento) {
+        if (documento.id.isEmpty()) {
+            client.post("$baseUrl/documentos.json") {
+                setBody(documento)
+                contentType(ContentType.Application.Json)
+            }
+        } else {
+            client.put("$baseUrl/documentos/${documento.id}.json") {
+                setBody(documento)
+                contentType(ContentType.Application.Json)
+            }
+        }
+    }
+
+    suspend fun listarDocumentos(): List<Documento> {
+        return try {
+            val resposta: Map<String, Documento>? = client.get("$baseUrl/documentos.json").body()
+            resposta?.map { it.value.copy(id = it.key) } ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun excluirDocumento(id: String) {
+        client.delete("$baseUrl/documentos/$id.json")
     }
 }

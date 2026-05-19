@@ -18,6 +18,9 @@ import second.project.viewmodel.VeiculoViewModel
 import second.project.viewmodel.ConvidadoViewModel
 import second.project.viewmodel.EncomendaViewModel
 import second.project.viewmodel.AvisoViewModel
+import second.project.viewmodel.ReservaViewModel
+import second.project.viewmodel.PrestadorViewModel
+import second.project.viewmodel.DocumentoViewModel
 
 @Composable
 fun App() {
@@ -26,6 +29,9 @@ fun App() {
     val cViewModel = ConvidadoViewModel(repo)
     val eViewModel = EncomendaViewModel(repo)
     val aViewModel = AvisoViewModel(repo)
+    val rViewModel = ReservaViewModel(repo)
+    val pViewModel = PrestadorViewModel(repo)
+    val dViewModel = DocumentoViewModel(repo)
     var isDarkTheme by rememberSaveable { mutableStateOf(PreferencesManager.isDarkThemeEnabled()) }
 
     val customDarkColors = darkColorScheme(
@@ -56,6 +62,9 @@ fun App() {
             cViewModel = cViewModel,
             eViewModel = eViewModel,
             aViewModel = aViewModel,
+            rViewModel = rViewModel,
+            pViewModel = pViewModel,
+            dViewModel = dViewModel,
             isDarkTheme = isDarkTheme,
             onToggleTheme = {
                 isDarkTheme = !isDarkTheme

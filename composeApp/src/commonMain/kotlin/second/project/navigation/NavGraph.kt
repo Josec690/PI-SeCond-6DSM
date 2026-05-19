@@ -6,9 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import second.project.ui.auth.*
 import second.project.ui.avisos.*
+import second.project.ui.configuracao.*
+import second.project.ui.documentos.*
 import second.project.ui.convidados.*
 import second.project.ui.dashboard.DashboardScreen
 import second.project.ui.encomendas.*
+import second.project.ui.prestadores.*
+import second.project.ui.reservas.*
 import second.project.ui.veiculos.*
 import second.project.viewmodel.*
 
@@ -22,6 +26,9 @@ fun AppNavigation(
     cViewModel: ConvidadoViewModel,
     eViewModel: EncomendaViewModel,
     aViewModel: AvisoViewModel,
+    rViewModel: ReservaViewModel,
+    pViewModel: PrestadorViewModel,
+    dViewModel: DocumentoViewModel,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit
 ) {
@@ -61,6 +68,10 @@ fun AppNavigation(
                     onNavConvidados = { navController.navigateSingleTopTo(Graph.CONVIDADOS) },
                     onNavEncomendas = { navController.navigateSingleTopTo(Graph.ENCOMENDAS) },
                     onNavAvisos = { navController.navigateSingleTopTo(Graph.AVISOS) },
+                    onNavReservas = { navController.navigateSingleTopTo(Graph.RESERVAS) },
+                    onNavPrestadores = { navController.navigateSingleTopTo(Graph.PRESTADORES) },
+                    onNavDocumentos = { navController.navigateSingleTopTo(Graph.DOCUMENTOS) },
+                    onNavConfiguracao = { navController.navigateSingleTopTo(Graph.CONFIGURACAO) },
                     isDarkTheme = isDarkTheme,
                     onToggleTheme = onToggleTheme,
                     onLogout = {
@@ -114,6 +125,44 @@ fun AppNavigation(
                 composable(Screen.AvisoForm.route) {
                     FormularioAvisoScreen(aViewModel) { navController.popBackStack() }
                 }
+            }
+
+            navigation(startDestination = Screen.ReservaList.route, route = Graph.RESERVAS) {
+                composable(Screen.ReservaList.route) {
+                    ListaReservasScreen(rViewModel) { navController.navigateSingleTopTo(Screen.ReservaForm.route) }
+                }
+
+                composable(Screen.ReservaForm.route) {
+                    FormularioReservaScreen(rViewModel) { navController.popBackStack() }
+                }
+            }
+
+            navigation(startDestination = Screen.PrestadorList.route, route = Graph.PRESTADORES) {
+                composable(Screen.PrestadorList.route) {
+                    ListaPrestadoresScreen(pViewModel) { navController.navigateSingleTopTo(Screen.PrestadorForm.route) }
+                }
+
+                composable(Screen.PrestadorForm.route) {
+                    FormularioPrestadorScreen(pViewModel) { navController.popBackStack() }
+                }
+            }
+
+            navigation(startDestination = Screen.DocumentoList.route, route = Graph.DOCUMENTOS) {
+                composable(Screen.DocumentoList.route) {
+                    ListaDocumentosScreen(dViewModel) { navController.navigateSingleTopTo(Screen.DocumentoForm.route) }
+                }
+
+                composable(Screen.DocumentoForm.route) {
+                    FormularioDocumentoScreen(dViewModel) { navController.popBackStack() }
+                }
+            }
+
+            composable(Screen.ConfiguracaoPerfil.route) {
+                ConfiguracaoPerfilScreen(
+                    isDarkTheme = isDarkTheme,
+                    onToggleTheme = onToggleTheme,
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

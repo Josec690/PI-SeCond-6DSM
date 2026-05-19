@@ -7,6 +7,10 @@ object Graph {
     const val CONVIDADOS = "convidados_graph"
     const val ENCOMENDAS = "encomendas_graph"
     const val AVISOS = "avisos_graph"
+    const val RESERVAS = "reservas_graph"
+    const val PRESTADORES = "prestadores_graph"
+    const val DOCUMENTOS = "documentos_graph"
+    const val CONFIGURACAO = "configuracao_graph"
 }
 
 sealed class Screen(val route: String) {
@@ -21,4 +25,11 @@ sealed class Screen(val route: String) {
     object EncomendaForm : Screen("e_form")
     object AvisoList : Screen("a_list")
     object AvisoForm : Screen("a_form")
+    object ReservaList : Screen("r_list")
+    object ReservaForm : Screen("r_form")
+    object PrestadorList : Screen("p_list")
+    object PrestadorForm : Screen("p_form")
+    object DocumentoList : Screen("d_list")
+    object DocumentoForm : Screen("d_form")
+    object ConfiguracaoPerfil : Screen("config_perfil")
 }
