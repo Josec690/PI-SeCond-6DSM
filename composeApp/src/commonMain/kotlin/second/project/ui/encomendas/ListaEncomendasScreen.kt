@@ -39,13 +39,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.viewmodel.EncomendaViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
-fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit) {
+fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     val total = viewModel.listaEncomendas.size
     val pendentes = viewModel.listaEncomendas.count { !it.statusRetirada }
     val listState = rememberLazyListState()
@@ -87,8 +88,11 @@ fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit)
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Encomendas", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text("Gerencie suas entregas recebidas.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Encomendas",
+                subtitle = "Gerencie suas entregas recebidas.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 

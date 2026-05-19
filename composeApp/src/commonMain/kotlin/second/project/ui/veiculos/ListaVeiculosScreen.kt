@@ -33,10 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.viewmodel.VeiculoViewModel
 
 @Composable
-fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
+fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     val total = viewModel.listaVeiculos.size
     val ativos = viewModel.listaVeiculos.count { it.ativo }
     val listState = rememberLazyListState()
@@ -78,8 +79,11 @@ fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Veículos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text("Gerencie os veículos cadastrados no condomínio.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Veículos",
+                subtitle = "Gerencie os veículos cadastrados no condomínio.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 

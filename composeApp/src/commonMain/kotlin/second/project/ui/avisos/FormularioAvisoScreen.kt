@@ -26,11 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.AvisoViewModel
 
 @Composable
-fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit) {
+fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -40,8 +41,11 @@ fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit) {
         ,
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Mural de Avisos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Comunique avisos importantes para os moradores.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+        ScreenHeader(
+            title = "Mural de Avisos",
+            subtitle = "Comunique avisos importantes para os moradores.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

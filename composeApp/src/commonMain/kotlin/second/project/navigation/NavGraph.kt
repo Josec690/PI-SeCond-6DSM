@@ -33,137 +33,192 @@ fun AppNavigation(
     onToggleTheme: () -> Unit
 ) {
     val navController = rememberNavController()
-
     NavHost(navController = navController, startDestination = Graph.AUTH) {
-        navigation(startDestination = Screen.Login.route, route = Graph.AUTH) {
-            composable(Screen.Login.route) {
-                LoginScreen(
-                    onLogin = {
-                        navController.navigate(Graph.APP) {
-                            popUpTo(Graph.AUTH) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    },
-                    onNavigateToCadastro = { navController.navigateSingleTopTo(Screen.Cadastro.route) }
-                )
+            navigation(startDestination = Screen.Login.route, route = Graph.AUTH) {
+                composable(Screen.Login.route) {
+                    LoginScreen(
+                        onLogin = {
+                            navController.navigate(Graph.APP) {
+                                popUpTo(Graph.AUTH) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onNavigateToCadastro = { navController.navigateSingleTopTo(Screen.Cadastro.route) }
+                    )
+                }
+
+                composable(Screen.Cadastro.route) {
+                    CadastroScreen(
+                        onRegisterSuccess = {
+                            navController.navigate(Graph.APP) {
+                                popUpTo(Graph.AUTH) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onBackToLogin = { navController.navigateSingleTopTo(Screen.Login.route) }
+                    )
+                }
             }
 
-            composable(Screen.Cadastro.route) {
-                CadastroScreen(
-                    onRegisterSuccess = {
-                        navController.navigate(Graph.APP) {
-                            popUpTo(Graph.AUTH) { inclusive = true }
-                            launchSingleTop = true
+            navigation(startDestination = Screen.Dashboard.route, route = Graph.APP) {
+                composable(Screen.Dashboard.route) {
+                    DashboardScreen(
+                        onNavVeiculos = { navController.navigateSingleTopTo(Graph.VEICULOS) },
+                        onNavConvidados = { navController.navigateSingleTopTo(Graph.CONVIDADOS) },
+                        onNavEncomendas = { navController.navigateSingleTopTo(Graph.ENCOMENDAS) },
+                        onNavAvisos = { navController.navigateSingleTopTo(Graph.AVISOS) },
+                        onNavReservas = { navController.navigateSingleTopTo(Graph.RESERVAS) },
+                        onNavPrestadores = { navController.navigateSingleTopTo(Graph.PRESTADORES) },
+                        onNavDocumentos = { navController.navigateSingleTopTo(Graph.DOCUMENTOS) },
+                        onNavConfiguracao = { navController.navigateSingleTopTo(Graph.CONFIGURACAO) },
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = onToggleTheme,
+                        onLogout = {
+                            navController.navigate(Graph.AUTH) {
+                                popUpTo(Graph.APP) { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
-                    },
-                    onBackToLogin = { navController.navigateSingleTopTo(Screen.Login.route) }
-                )
-            }
-        }
+                    )
+                }
 
-        navigation(startDestination = Screen.Dashboard.route, route = Graph.APP) {
-            composable(Screen.Dashboard.route) {
-                DashboardScreen(
-                    onNavVeiculos = { navController.navigateSingleTopTo(Graph.VEICULOS) },
-                    onNavConvidados = { navController.navigateSingleTopTo(Graph.CONVIDADOS) },
-                    onNavEncomendas = { navController.navigateSingleTopTo(Graph.ENCOMENDAS) },
-                    onNavAvisos = { navController.navigateSingleTopTo(Graph.AVISOS) },
-                    onNavReservas = { navController.navigateSingleTopTo(Graph.RESERVAS) },
-                    onNavPrestadores = { navController.navigateSingleTopTo(Graph.PRESTADORES) },
-                    onNavDocumentos = { navController.navigateSingleTopTo(Graph.DOCUMENTOS) },
-                    onNavConfiguracao = { navController.navigateSingleTopTo(Graph.CONFIGURACAO) },
-                    isDarkTheme = isDarkTheme,
-                    onToggleTheme = onToggleTheme,
-                    onLogout = {
-                        navController.navigate(Graph.AUTH) {
-                            popUpTo(Graph.APP) { inclusive = true }
-                            launchSingleTop = true
-                        }
+                navigation(startDestination = Screen.VeiculoList.route, route = Graph.VEICULOS) {
+                    composable(Screen.VeiculoList.route) {
+                        LaunchedEffect(Unit) { vViewModel.carregar() }
+                        ListaVeiculosScreen(
+                            viewModel = vViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.VeiculoForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
                     }
-                )
-            }
 
-            navigation(startDestination = Screen.VeiculoList.route, route = Graph.VEICULOS) {
-                composable(Screen.VeiculoList.route) {
-                    LaunchedEffect(Unit) { vViewModel.carregar() }
-                    ListaVeiculosScreen(vViewModel) { navController.navigateSingleTopTo(Screen.VeiculoForm.route) }
+                    composable(Screen.VeiculoForm.route) {
+                        FormularioVeiculoScreen(
+                            viewModel = vViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable(Screen.VeiculoForm.route) {
-                    FormularioVeiculoScreen(vViewModel) { navController.popBackStack() }
-                }
-            }
+                navigation(startDestination = Screen.ConvidadoList.route, route = Graph.CONVIDADOS) {
+                    composable(Screen.ConvidadoList.route) {
+                        LaunchedEffect(Unit) { cViewModel.carregar() }
+                        ListaConvidadosScreen(
+                            viewModel = cViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.ConvidadoForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
-            navigation(startDestination = Screen.ConvidadoList.route, route = Graph.CONVIDADOS) {
-                composable(Screen.ConvidadoList.route) {
-                    LaunchedEffect(Unit) { cViewModel.carregar() }
-                    ListaConvidadosScreen(cViewModel) { navController.navigateSingleTopTo(Screen.ConvidadoForm.route) }
-                }
-
-                composable(Screen.ConvidadoForm.route) {
-                    FormularioConvidadoScreen(cViewModel) { navController.popBackStack() }
-                }
-            }
-
-            navigation(startDestination = Screen.EncomendaList.route, route = Graph.ENCOMENDAS) {
-                composable(Screen.EncomendaList.route) {
-                    LaunchedEffect(Unit) { eViewModel.carregar() }
-                    ListaEncomendasScreen(eViewModel) { navController.navigateSingleTopTo(Screen.EncomendaForm.route) }
+                    composable(Screen.ConvidadoForm.route) {
+                        FormularioConvidadoScreen(
+                            viewModel = cViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable(Screen.EncomendaForm.route) {
-                    FormularioEncomendaScreen(eViewModel) { navController.popBackStack() }
-                }
-            }
+                navigation(startDestination = Screen.EncomendaList.route, route = Graph.ENCOMENDAS) {
+                    composable(Screen.EncomendaList.route) {
+                        LaunchedEffect(Unit) { eViewModel.carregar() }
+                        ListaEncomendasScreen(
+                            viewModel = eViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.EncomendaForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
-            navigation(startDestination = Screen.AvisoList.route, route = Graph.AVISOS) {
-                composable(Screen.AvisoList.route) {
-                    LaunchedEffect(Unit) { aViewModel.carregar() }
-                    ListaAvisosScreen(aViewModel) { navController.navigateSingleTopTo(Screen.AvisoForm.route) }
-                }
-
-                composable(Screen.AvisoForm.route) {
-                    FormularioAvisoScreen(aViewModel) { navController.popBackStack() }
-                }
-            }
-
-            navigation(startDestination = Screen.ReservaList.route, route = Graph.RESERVAS) {
-                composable(Screen.ReservaList.route) {
-                    ListaReservasScreen(rViewModel) { navController.navigateSingleTopTo(Screen.ReservaForm.route) }
+                    composable(Screen.EncomendaForm.route) {
+                        FormularioEncomendaScreen(
+                            viewModel = eViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable(Screen.ReservaForm.route) {
-                    FormularioReservaScreen(rViewModel) { navController.popBackStack() }
-                }
-            }
+                navigation(startDestination = Screen.AvisoList.route, route = Graph.AVISOS) {
+                    composable(Screen.AvisoList.route) {
+                        LaunchedEffect(Unit) { aViewModel.carregar() }
+                        ListaAvisosScreen(
+                            viewModel = aViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.AvisoForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
-            navigation(startDestination = Screen.PrestadorList.route, route = Graph.PRESTADORES) {
-                composable(Screen.PrestadorList.route) {
-                    ListaPrestadoresScreen(pViewModel) { navController.navigateSingleTopTo(Screen.PrestadorForm.route) }
+                    composable(Screen.AvisoForm.route) {
+                        FormularioAvisoScreen(
+                            viewModel = aViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable(Screen.PrestadorForm.route) {
-                    FormularioPrestadorScreen(pViewModel) { navController.popBackStack() }
-                }
-            }
+                navigation(startDestination = Screen.ReservaList.route, route = Graph.RESERVAS) {
+                    composable(Screen.ReservaList.route) {
+                        ListaReservasScreen(
+                            viewModel = rViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.ReservaForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
-            navigation(startDestination = Screen.DocumentoList.route, route = Graph.DOCUMENTOS) {
-                composable(Screen.DocumentoList.route) {
-                    ListaDocumentosScreen(dViewModel) { navController.navigateSingleTopTo(Screen.DocumentoForm.route) }
+                    composable(Screen.ReservaForm.route) {
+                        FormularioReservaScreen(
+                            viewModel = rViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable(Screen.DocumentoForm.route) {
-                    FormularioDocumentoScreen(dViewModel) { navController.popBackStack() }
-                }
-            }
+                navigation(startDestination = Screen.PrestadorList.route, route = Graph.PRESTADORES) {
+                    composable(Screen.PrestadorList.route) {
+                        ListaPrestadoresScreen(
+                            viewModel = pViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.PrestadorForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
 
-            composable(Screen.ConfiguracaoPerfil.route) {
-                ConfiguracaoPerfilScreen(
-                    isDarkTheme = isDarkTheme,
-                    onToggleTheme = onToggleTheme,
-                    onBack = { navController.popBackStack() }
-                )
+                    composable(Screen.PrestadorForm.route) {
+                        FormularioPrestadorScreen(
+                            viewModel = pViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+
+                navigation(startDestination = Screen.DocumentoList.route, route = Graph.DOCUMENTOS) {
+                    composable(Screen.DocumentoList.route) {
+                        ListaDocumentosScreen(
+                            viewModel = dViewModel,
+                            onAddClick = { navController.navigateSingleTopTo(Screen.DocumentoForm.route) },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(Screen.DocumentoForm.route) {
+                        FormularioDocumentoScreen(
+                            viewModel = dViewModel,
+                            onSaved = { navController.popBackStack() },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+
+                composable(Screen.ConfiguracaoPerfil.route) {
+                    ConfiguracaoPerfilScreen(
+                        isDarkTheme = isDarkTheme,
+                        onToggleTheme = onToggleTheme,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
-    }
 }

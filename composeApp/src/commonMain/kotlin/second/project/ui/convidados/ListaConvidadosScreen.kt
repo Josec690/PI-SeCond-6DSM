@@ -33,10 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.viewmodel.ConvidadoViewModel
 
 @Composable
-fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit) {
+fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     val total = viewModel.listaConvidados.size
     val ativos = viewModel.listaConvidados.count { it.ativo }
     val listState = rememberLazyListState()
@@ -78,8 +79,11 @@ fun ListaConvidadosScreen(viewModel: ConvidadoViewModel, onAddClick: () -> Unit)
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Convidados", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text("Gerencie os convidados cadastrados.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Convidados",
+                subtitle = "Gerencie os convidados cadastrados.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 

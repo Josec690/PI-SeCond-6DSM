@@ -46,11 +46,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.PrestadorViewModel
 
 @Composable
-fun ListaPrestadoresScreen(viewModel: PrestadorViewModel, onAddClick: () -> Unit) {
+fun ListaPrestadoresScreen(viewModel: PrestadorViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.carregar() }
 
     val total = viewModel.listaPrestadores.size
@@ -76,8 +77,11 @@ fun ListaPrestadoresScreen(viewModel: PrestadorViewModel, onAddClick: () -> Unit
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Prestadores de Serviço", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
-            Text("Gerencie e autorize manutenções e entregas agendadas.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Prestadores de Serviço",
+                subtitle = "Gerencie e autorize manutenções e entregas agendadas.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 
@@ -156,7 +160,7 @@ fun ListaPrestadoresScreen(viewModel: PrestadorViewModel, onAddClick: () -> Unit
 }
 
 @Composable
-fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit) {
+fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -165,8 +169,11 @@ fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Gestão de Prestadores", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Cadastre ou atualize um prestador de serviço.", color = CrudDesign.textSecondary)
+        ScreenHeader(
+            title = "Gestão de Prestadores",
+            subtitle = "Cadastre ou atualize um prestador de serviço.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

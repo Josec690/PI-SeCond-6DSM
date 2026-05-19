@@ -42,10 +42,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.viewmodel.AvisoViewModel
 
 @Composable
-fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit) {
+fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     val total = viewModel.listaAvisos.size
     val urgentes = viewModel.listaAvisos.count { it.prioridade }
     val listState = rememberLazyListState()
@@ -88,8 +89,11 @@ fun ListaAvisosScreen(viewModel: AvisoViewModel, onAddClick: () -> Unit) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Mural da Comunidade", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-            Text("Fique atualizado com os últimos avisos do SeCond.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Mural da Comunidade",
+                subtitle = "Fique atualizado com os últimos avisos do SeCond.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 

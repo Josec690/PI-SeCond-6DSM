@@ -18,11 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.VeiculoViewModel
 
 @Composable
-fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit) {
+fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -32,8 +33,11 @@ fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit) {
         ,
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Gestão de Veículos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Cadastre ou atualize os veículos do condomínio.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+        ScreenHeader(
+            title = "Gestão de Veículos",
+            subtitle = "Cadastre ou atualize os veículos do condomínio.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

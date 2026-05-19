@@ -47,11 +47,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.ReservaViewModel
 
 @Composable
-fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit) {
+fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.carregar() }
 
     val total = viewModel.listaReservas.size
@@ -77,8 +78,11 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Reservas", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
-            Text("Organize seu próximo evento. Explore as áreas comuns e reserve seu horário com facilidade.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Reservas",
+                subtitle = "Organize seu próximo evento. Explore as áreas comuns e reserve seu horário com facilidade.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 
@@ -156,7 +160,7 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit) {
 }
 
 @Composable
-fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit) {
+fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -165,8 +169,11 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit) {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Gestão de Reservas", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Cadastre ou atualize uma reserva de área comum.", color = CrudDesign.textSecondary)
+        ScreenHeader(
+            title = "Gestão de Reservas",
+            subtitle = "Cadastre ou atualize uma reserva de área comum.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

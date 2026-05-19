@@ -26,11 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.EncomendaViewModel
 
 @Composable
-fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit) {
+fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -40,8 +41,11 @@ fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit
         ,
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Gestão de Encomendas", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Cadastre ou atualize entregas do condomínio.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+        ScreenHeader(
+            title = "Gestão de Encomendas",
+            subtitle = "Cadastre ou atualize entregas do condomínio.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

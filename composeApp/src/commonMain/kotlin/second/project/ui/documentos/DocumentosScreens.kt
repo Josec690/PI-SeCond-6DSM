@@ -45,11 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.DocumentoViewModel
 
 @Composable
-fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit) {
+fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
     LaunchedEffect(Unit) { viewModel.carregar() }
 
     val total = viewModel.listaDocumentos.size
@@ -74,8 +75,11 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit)
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 20.dp)
         ) {
-            Text("Documentos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
-            Text("Acesso seguro e organizado aos documentos essenciais e registros legais da sua residência.", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium)
+            ScreenHeader(
+                title = "Documentos",
+                subtitle = "Acesso seguro e organizado aos documentos essenciais e registros legais da sua residência.",
+                onBack = onBack
+            )
 
             Spacer(Modifier.height(14.dp))
 
@@ -140,7 +144,7 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit)
 }
 
 @Composable
-fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit) {
+fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -149,8 +153,11 @@ fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Gestão de Documentos", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
-        Text("Cadastre ou atualize documentos do condomínio.", color = CrudDesign.textSecondary)
+        ScreenHeader(
+            title = "Gestão de Documentos",
+            subtitle = "Cadastre ou atualize documentos do condomínio.",
+            onBack = onBack
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
+import second.project.ui.components.ScreenHeader
 
 @Suppress("unused")
 @Composable
@@ -36,15 +37,10 @@ fun ConfiguracaoPerfilScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            "Configuração e Perfil",
-            color = CrudDesign.textPrimary,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold
-        )
-        Text(
-            "Ajuste preferências da conta e aparência do sistema.",
-            color = CrudDesign.textSecondary
+        ScreenHeader(
+            title = "Configuração e Perfil",
+            subtitle = "Ajuste preferências da conta e aparência do sistema.",
+            onBack = onBack
         )
 
         Card(
