@@ -46,13 +46,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.ReservaViewModel
 
 @Composable
-fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
+fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
+    val isAdmin = userRole == UserRole.ADMIN
     LaunchedEffect(Unit) { viewModel.carregar() }
 
     val total = viewModel.listaReservas.size
@@ -80,7 +82,7 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onB
         ) {
             ScreenHeader(
                 title = "Reservas",
-                subtitle = "Organize seu próximo evento. Explore as áreas comuns e reserve seu horário com facilidade.",
+                subtitle = if (isAdmin) "Aprove ou acompanhe pedidos de reserva." else "Solicite areas comuns e acompanhe a aprovacao.",
                 onBack = onBack
             )
 
@@ -123,7 +125,7 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onB
                                     Text("Morador: ${reserva.morador}", color = CrudDesign.textSecondary)
                                 }
                                 Card(
-                                    modifier = Modifier.clickable { viewModel.alternarStatus(reserva) },
+                                    modifier = if (isAdmin) Modifier.clickable { viewModel.alternarStatus(reserva) } else Modifier,
                                     colors = CardDefaults.cardColors(containerColor = if (reserva.confirmada) CrudDesign.primary.copy(alpha = 0.2f) else CrudDesign.danger.copy(alpha = 0.2f)),
                                     shape = CrudDesign.cardShape,
                                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -144,11 +146,13 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onB
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Spacer(Modifier.weight(1f))
-                                IconButton(onClick = { viewModel.editar(reserva); onAddClick() }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar reserva", tint = CrudDesign.textPrimary)
-                                }
-                                IconButton(onClick = { viewModel.apagar(reserva.id) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Apagar reserva", tint = CrudDesign.danger)
+                                if (isAdmin) {
+                                    IconButton(onClick = { viewModel.editar(reserva); onAddClick() }) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Editar reserva", tint = CrudDesign.textPrimary)
+                                    }
+                                    IconButton(onClick = { viewModel.apagar(reserva.id) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Apagar reserva", tint = CrudDesign.danger)
+                                    }
                                 }
                             }
                         }
@@ -160,7 +164,8 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onB
 }
 
 @Composable
-fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
+fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
+    val isAdmin = userRole == UserRole.ADMIN
     Column(
         Modifier
             .fillMaxSize()
@@ -171,7 +176,7 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, on
     ) {
         ScreenHeader(
             title = "Gestão de Reservas",
-            subtitle = "Cadastre ou atualize uma reserva de área comum.",
+            subtitle = if (isAdmin) "Cadastre, atualize ou aprove uma reserva." else "Solicite uma reserva para aprovacao da administracao.",
             onBack = onBack
         )
 
@@ -189,14 +194,19 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, on
                 OutlinedTextField(value = viewModel.horario, onValueChange = { viewModel.horario = it }, label = { Text("Horário") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.observacoes, onValueChange = { viewModel.observacoes = it }, label = { Text("Observações") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), minLines = 3)
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Confirmada", color = CrudDesign.textPrimary)
-                    Spacer(Modifier.weight(1f))
-                    Switch(checked = viewModel.confirmada, onCheckedChange = { viewModel.confirmada = it })
+                if (isAdmin) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Confirmada", color = CrudDesign.textPrimary)
+                        Spacer(Modifier.weight(1f))
+                        Switch(checked = viewModel.confirmada, onCheckedChange = { viewModel.confirmada = it })
+                    }
+                } else {
+                    Text("A reserva sera enviada como pendente para aprovacao.", color = CrudDesign.textSecondary)
                 }
 
                 Button(
                     onClick = {
+                        if (!isAdmin) viewModel.confirmada = false
                         viewModel.gravar()
                         onSaved()
                     },

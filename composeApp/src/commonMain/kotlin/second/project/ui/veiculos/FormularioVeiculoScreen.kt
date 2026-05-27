@@ -83,12 +83,44 @@ fun FormularioVeiculoScreen(viewModel: VeiculoViewModel, onSaved: () -> Unit, on
                 OutlinedTextField(
                     value = viewModel.proprietario,
                     onValueChange = { viewModel.proprietario = it },
-                    label = { Text("Proprietário") },
+                    label = { Text("Proprietario") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = CrudDesign.fieldShape,
                     colors = crudOutlinedTextFieldColors(),
                     singleLine = true
                 )
+
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = viewModel.moradorVinculado,
+                    onValueChange = { viewModel.moradorVinculado = it },
+                    label = { Text("Morador vinculado") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = CrudDesign.fieldShape,
+                    colors = crudOutlinedTextFieldColors(),
+                    singleLine = true
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = viewModel.bloco,
+                        onValueChange = { viewModel.bloco = it },
+                        label = { Text("Bloco") },
+                        modifier = Modifier.weight(1f),
+                        shape = CrudDesign.fieldShape,
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = viewModel.apartamento,
+                        onValueChange = { viewModel.apartamento = it },
+                        label = { Text("Apto") },
+                        modifier = Modifier.weight(1f),
+                        shape = CrudDesign.fieldShape,
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true
+                    )
+                }
 
                 Spacer(Modifier.height(24.dp))
 

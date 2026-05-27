@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import second.project.navigation.AppNavigation
+import second.project.model.UserRole
 import second.project.preferences.PreferencesManager
 import second.project.repository.RepositorioRemoto
 import second.project.ui.components.CrudDesign
@@ -33,6 +34,7 @@ fun App() {
     val pViewModel = PrestadorViewModel(repo)
     val dViewModel = DocumentoViewModel(repo)
     var isDarkTheme by rememberSaveable { mutableStateOf(PreferencesManager.isDarkThemeEnabled()) }
+    var userRole by rememberSaveable { mutableStateOf(UserRole.from(PreferencesManager.getUserRole())) }
 
     val customDarkColors = darkColorScheme(
         primary = Color(0xFF4A3B8B),
@@ -65,6 +67,11 @@ fun App() {
             rViewModel = rViewModel,
             pViewModel = pViewModel,
             dViewModel = dViewModel,
+            userRole = userRole,
+            onUserRoleChange = { role ->
+                userRole = role
+                PreferencesManager.setUserRole(role.value)
+            },
             isDarkTheme = isDarkTheme,
             onToggleTheme = {
                 isDarkTheme = !isDarkTheme

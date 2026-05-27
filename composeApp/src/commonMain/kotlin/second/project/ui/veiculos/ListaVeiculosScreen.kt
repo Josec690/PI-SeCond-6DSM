@@ -142,10 +142,17 @@ fun ListaVeiculosScreen(viewModel: VeiculoViewModel, onAddClick: () -> Unit, onB
                             }
 
                             Text(
-                                "Proprietário: ${veiculo.proprietario}",
+                                "Morador: ${veiculo.moradorVinculado.ifBlank { veiculo.proprietario }}",
                                 color = CrudDesign.textSecondary,
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                            if (veiculo.bloco.isNotBlank() || veiculo.apartamento.isNotBlank()) {
+                                Text(
+                                    "Unidade: Bloco ${veiculo.bloco.ifBlank { "-" }} / Apto ${veiculo.apartamento.ifBlank { "-" }}",
+                                    color = CrudDesign.textSecondary,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Spacer(Modifier.weight(1f))

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,22 +36,31 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.DocumentoViewModel
 
 @Composable
-fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
+fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
+    val isAdmin = userRole == UserRole.ADMIN
+    val uriHandler = LocalUriHandler.current
     LaunchedEffect(Unit) { viewModel.carregar() }
 
     val total = viewModel.listaDocumentos.size
@@ -58,14 +68,16 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit,
     Scaffold(
         containerColor = CrudDesign.page,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.limparCampos()
-                    onAddClick()
-                },
-                containerColor = CrudDesign.primary
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+            if (isAdmin) {
+                FloatingActionButton(
+                    onClick = {
+                        viewModel.limparCampos()
+                        onAddClick()
+                    },
+                    containerColor = CrudDesign.primary
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+                }
             }
         }
     ) { innerPadding ->
@@ -77,7 +89,7 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit,
         ) {
             ScreenHeader(
                 title = "Documentos",
-                subtitle = "Acesso seguro e organizado aos documentos essenciais e registros legais da sua residência.",
+                subtitle = if (isAdmin) "Insira regras, atas e documentos importantes." else "Acesse regras, atas e documentos importantes.",
                 onBack = onBack
             )
 
@@ -128,11 +140,21 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit,
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Spacer(Modifier.weight(1f))
-                                IconButton(onClick = { viewModel.editar(documento); onAddClick() }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar documento", tint = CrudDesign.textPrimary)
+                                if (documento.arquivoUrl.isNotBlank()) {
+                                    Button(
+                                        onClick = { uriHandler.openUri(documento.arquivoUrl) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
+                                    ) {
+                                        Text("BAIXAR")
+                                    }
                                 }
-                                IconButton(onClick = { viewModel.apagar(documento.id) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Apagar documento", tint = CrudDesign.danger)
+                                if (isAdmin) {
+                                    IconButton(onClick = { viewModel.editar(documento); onAddClick() }) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Editar documento", tint = CrudDesign.textPrimary)
+                                    }
+                                    IconButton(onClick = { viewModel.apagar(documento.id) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Apagar documento", tint = CrudDesign.danger)
+                                    }
                                 }
                             }
                         }
@@ -145,6 +167,9 @@ fun ListaDocumentosScreen(viewModel: DocumentoViewModel, onAddClick: () -> Unit,
 
 @Composable
 fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
+    var showCalendar by remember { mutableStateOf(false) }
+    var uploadMessage by remember { mutableStateOf("") }
+
     Column(
         Modifier
             .fillMaxSize()
@@ -170,8 +195,30 @@ fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit
                 OutlinedTextField(value = viewModel.titulo, onValueChange = { viewModel.titulo = it }, label = { Text("Título") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.tipo, onValueChange = { viewModel.tipo = it }, label = { Text("Tipo") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.descricao, onValueChange = { viewModel.descricao = it }, label = { Text("Descrição") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), minLines = 3)
-                OutlinedTextField(value = viewModel.dataCadastro, onValueChange = { viewModel.dataCadastro = it }, label = { Text("Data de cadastro") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
-                OutlinedTextField(value = viewModel.arquivoUrl, onValueChange = { viewModel.arquivoUrl = it }, label = { Text("URL do arquivo") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
+                Box(Modifier.fillMaxWidth().clickable { showCalendar = true }) {
+                    OutlinedTextField(
+                        value = viewModel.dataCadastro,
+                        onValueChange = { },
+                        label = { Text("Data de cadastro") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false
+                    )
+                }
+                OutlinedTextField(value = viewModel.arquivoUrl, onValueChange = { viewModel.arquivoUrl = it }, label = { Text("Arquivo ou URL") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
+                OutlinedButton(
+                    onClick = {
+                        uploadMessage = "Informe o caminho/URL do arquivo no campo acima. Upload nativo exige integrar um seletor de arquivos da plataforma."
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("SELECIONAR ARQUIVO")
+                }
+                if (uploadMessage.isNotBlank()) {
+                    Text(uploadMessage, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+                }
 
                 Button(
                     onClick = {
@@ -193,6 +240,76 @@ fun FormularioDocumentoScreen(viewModel: DocumentoViewModel, onSaved: () -> Unit
             }
         }
     }
+
+    if (showCalendar) {
+        SimpleCalendarDialog(
+            onDismiss = { showCalendar = false },
+            onDateSelected = { selectedDate ->
+                viewModel.dataCadastro = selectedDate
+                showCalendar = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun SimpleCalendarDialog(onDismiss: () -> Unit, onDateSelected: (String) -> Unit) {
+    var mes by remember { mutableStateOf("01") }
+    var ano by remember { mutableStateOf("2026") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Selecionar data") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = mes,
+                        onValueChange = { mes = it.filter(Char::isDigit).take(2) },
+                        label = { Text("Mes") },
+                        modifier = Modifier.weight(1f),
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = ano,
+                        onValueChange = { ano = it.filter(Char::isDigit).take(4) },
+                        label = { Text("Ano") },
+                        modifier = Modifier.weight(1f),
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true
+                    )
+                }
+
+                (1..31).chunked(7).forEach { semana ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        semana.forEach { dia ->
+                            Button(
+                                onClick = {
+                                    val diaFormatado = dia.toString().padStart(2, '0')
+                                    val mesFormatado = mes.padStart(2, '0').takeLast(2)
+                                    val anoFormatado = ano.padStart(4, '0').takeLast(4)
+                                    onDateSelected("$diaFormatado/$mesFormatado/$anoFormatado")
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.surfaceAlt)
+                            ) {
+                                Text(dia.toString(), color = CrudDesign.textPrimary)
+                            }
+                        }
+                        repeat(7 - semana.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("FECHAR")
+            }
+        }
+    )
 }
 
 @Composable

@@ -4,13 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import second.project.model.UserRole
 import second.project.ui.auth.*
 import second.project.ui.avisos.*
+import second.project.ui.chat.ChatPortariaScreen
 import second.project.ui.configuracao.*
 import second.project.ui.documentos.*
 import second.project.ui.convidados.*
 import second.project.ui.dashboard.DashboardScreen
 import second.project.ui.encomendas.*
+import second.project.ui.moradores.CadastroMoradorScreen
 import second.project.ui.prestadores.*
 import second.project.ui.reservas.*
 import second.project.ui.veiculos.*
@@ -29,6 +32,8 @@ fun AppNavigation(
     rViewModel: ReservaViewModel,
     pViewModel: PrestadorViewModel,
     dViewModel: DocumentoViewModel,
+    userRole: UserRole,
+    onUserRoleChange: (UserRole) -> Unit,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit
 ) {
@@ -37,7 +42,8 @@ fun AppNavigation(
             navigation(startDestination = Screen.Login.route, route = Graph.AUTH) {
                 composable(Screen.Login.route) {
                     LoginScreen(
-                        onLogin = {
+                        onLogin = { role ->
+                            onUserRoleChange(role)
                             navController.navigate(Graph.APP) {
                                 popUpTo(Graph.AUTH) { inclusive = true }
                                 launchSingleTop = true
@@ -50,6 +56,7 @@ fun AppNavigation(
                 composable(Screen.Cadastro.route) {
                     CadastroScreen(
                         onRegisterSuccess = {
+                            onUserRoleChange(UserRole.ADMIN)
                             navController.navigate(Graph.APP) {
                                 popUpTo(Graph.AUTH) { inclusive = true }
                                 launchSingleTop = true
@@ -58,6 +65,7 @@ fun AppNavigation(
                         onBackToLogin = { navController.navigateSingleTopTo(Screen.Login.route) }
                     )
                 }
+
             }
 
             navigation(startDestination = Screen.Dashboard.route, route = Graph.APP) {
@@ -70,7 +78,10 @@ fun AppNavigation(
                         onNavReservas = { navController.navigateSingleTopTo(Graph.RESERVAS) },
                         onNavPrestadores = { navController.navigateSingleTopTo(Graph.PRESTADORES) },
                         onNavDocumentos = { navController.navigateSingleTopTo(Graph.DOCUMENTOS) },
-                        onNavConfiguracao = { navController.navigateSingleTopTo(Graph.CONFIGURACAO) },
+                        onNavChat = { navController.navigateSingleTopTo(Graph.CHAT) },
+                        onNavMoradores = { navController.navigateSingleTopTo(Graph.MORADORES) },
+                        onNavConfiguracao = { navController.navigateSingleTopTo(Screen.ConfiguracaoPerfil.route) },
+                        userRole = userRole,
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         onLogout = {
@@ -126,7 +137,8 @@ fun AppNavigation(
                         ListaEncomendasScreen(
                             viewModel = eViewModel,
                             onAddClick = { navController.navigateSingleTopTo(Screen.EncomendaForm.route) },
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            userRole = userRole
                         )
                     }
 
@@ -134,7 +146,8 @@ fun AppNavigation(
                         FormularioEncomendaScreen(
                             viewModel = eViewModel,
                             onSaved = { navController.popBackStack() },
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            userRole = userRole
                         )
                     }
                 }
@@ -163,7 +176,8 @@ fun AppNavigation(
                         ListaReservasScreen(
                             viewModel = rViewModel,
                             onAddClick = { navController.navigateSingleTopTo(Screen.ReservaForm.route) },
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            userRole = userRole
                         )
                     }
 
@@ -171,7 +185,8 @@ fun AppNavigation(
                         FormularioReservaScreen(
                             viewModel = rViewModel,
                             onSaved = { navController.popBackStack() },
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            userRole = userRole
                         )
                     }
                 }
@@ -199,7 +214,8 @@ fun AppNavigation(
                         ListaDocumentosScreen(
                             viewModel = dViewModel,
                             onAddClick = { navController.navigateSingleTopTo(Screen.DocumentoForm.route) },
-                            onBack = { navController.popBackStack() }
+                            onBack = { navController.popBackStack() },
+                            userRole = userRole
                         )
                     }
 
@@ -212,10 +228,28 @@ fun AppNavigation(
                     }
                 }
 
+                navigation(startDestination = Screen.ChatPortaria.route, route = Graph.CHAT) {
+                    composable(Screen.ChatPortaria.route) {
+                        ChatPortariaScreen(
+                            userRole = userRole,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+
+                navigation(startDestination = Screen.CadastroMorador.route, route = Graph.MORADORES) {
+                    composable(Screen.CadastroMorador.route) {
+                        CadastroMoradorScreen(
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+
                 composable(Screen.ConfiguracaoPerfil.route) {
                     ConfiguracaoPerfilScreen(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
+                        userRole = userRole,
                         onBack = { navController.popBackStack() }
                     )
                 }

@@ -68,6 +68,13 @@ class EncomendaViewModel(private val repo: RepositorioRemoto) {
         statusRetirada = e.statusRetirada
     }
 
+    fun alternarRetirada(e: Encomenda) {
+        scope.launch {
+            repo.salvarEncomenda(e.copy(statusRetirada = !e.statusRetirada))
+            carregar()
+        }
+    }
+
     fun limparCampos() {
         id = ""
         destinatarioNome = ""

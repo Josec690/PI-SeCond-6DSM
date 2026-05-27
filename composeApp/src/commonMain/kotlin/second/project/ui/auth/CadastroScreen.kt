@@ -63,7 +63,7 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
     var confirmarSenha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
     var confirmarVisivel by remember { mutableStateOf(false) }
-    var selectedRole by remember { mutableStateOf(UserRole.MORADOR) }
+    val selectedRole = UserRole.ADMIN
 
     BoxWithConstraints(
         modifier = Modifier
@@ -104,10 +104,10 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
                         confirmarVisivel = confirmarVisivel,
                         onToggleConfirmar = { confirmarVisivel = !confirmarVisivel },
                         selectedRole = selectedRole,
-                        onSelectRole = { selectedRole = it },
+                        onSelectRole = { },
                         onRegister = {
                             if (senha.isNotBlank() && senha == confirmarSenha) {
-                                PreferencesManager.setUserRole(selectedRole.value)
+                                PreferencesManager.setUserRole(UserRole.ADMIN.value)
                                 onRegisterSuccess()
                             }
                         },
@@ -142,10 +142,10 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
                         confirmarVisivel = confirmarVisivel,
                         onToggleConfirmar = { confirmarVisivel = !confirmarVisivel },
                         selectedRole = selectedRole,
-                        onSelectRole = { selectedRole = it },
+                        onSelectRole = { },
                         onRegister = {
                             if (senha.isNotBlank() && senha == confirmarSenha) {
-                                PreferencesManager.setUserRole(selectedRole.value)
+                                PreferencesManager.setUserRole(UserRole.ADMIN.value)
                                 onRegisterSuccess()
                             }
                         },
@@ -262,8 +262,8 @@ private fun RegisterPanel(
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Criar Conta", color = CrudDesign.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.Black)
-            Text("Experimente a gestão comunitária perfeita com um visual moderno e seguro.", color = CrudDesign.textSecondary, fontSize = 13.sp)
+            Text("Criar Administrador", color = CrudDesign.textPrimary, fontSize = 28.sp, fontWeight = FontWeight.Black)
+            Text("Cadastre uma conta administrativa para gerenciar moradores e módulos do condomínio.", color = CrudDesign.textSecondary, fontSize = 13.sp)
 
             OutlinedTextField(
                 value = nome,
@@ -327,11 +327,7 @@ private fun RegisterPanel(
                 singleLine = true
             )
 
-            Text("Tipo de conta", color = CrudDesign.textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                RoleChip("Morador", selectedRole == UserRole.MORADOR) { onSelectRole(UserRole.MORADOR) }
-                RoleChip("Administrador", selectedRole == UserRole.ADMIN) { onSelectRole(UserRole.ADMIN) }
-            }
+            Text("Tipo de conta: Administrador", color = CrudDesign.textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 
             Button(
                 onClick = onRegister,

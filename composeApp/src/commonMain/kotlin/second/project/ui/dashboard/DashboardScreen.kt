@@ -3,6 +3,8 @@ package second.project.ui.dashboard
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Event
@@ -60,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +76,10 @@ fun DashboardScreen(
     onNavReservas: () -> Unit,
     onNavPrestadores: () -> Unit,
     onNavDocumentos: () -> Unit,
+    onNavChat: () -> Unit,
+    onNavMoradores: () -> Unit,
     onNavConfiguracao: () -> Unit,
+    userRole: UserRole,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     onLogout: () -> Unit
@@ -91,21 +98,38 @@ fun DashboardScreen(
                 drawerContentColor = CrudDesign.textPrimary
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier.fillMaxSize().padding(18.dp)
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                     Text("Menu", color = CrudDesign.textPrimary, fontSize = 24.sp, fontWeight = FontWeight.Black)
                     Text("Acesse os módulos e saia quando terminar.", color = CrudDesign.textSecondary, fontSize = 12.sp)
                     HorizontalDivider(color = CrudDesign.primary.copy(alpha = 0.18f))
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    DrawerItem("Veículos", Icons.Default.DirectionsCar) { navigateAndClose(onNavVeiculos) }
-                    DrawerItem("Convidados", Icons.Default.Group) { navigateAndClose(onNavConvidados) }
+                    if (userRole == UserRole.ADMIN) {
+                        DrawerItem("Moradores", Icons.Default.Group) { navigateAndClose(onNavMoradores) }
+                        DrawerItem("Veículos", Icons.Default.DirectionsCar) { navigateAndClose(onNavVeiculos) }
+                        DrawerItem("Convidados", Icons.Default.Group) { navigateAndClose(onNavConvidados) }
+                    }
+                    if (userRole != UserRole.ADMIN) {
+                        DrawerItem("Convidados", Icons.Default.Group) { navigateAndClose(onNavConvidados) }
+                    }
                     DrawerItem("Encomendas", Icons.Default.LocalShipping) { navigateAndClose(onNavEncomendas) }
                     DrawerItem("Avisos", Icons.Default.Notifications) { navigateAndClose(onNavAvisos) }
                     DrawerItem("Reservas", Icons.Default.Event) { navigateAndClose(onNavReservas) }
-                    DrawerItem("Prestadores", Icons.Default.Build) { navigateAndClose(onNavPrestadores) }
+                    if (userRole == UserRole.ADMIN) {
+                        DrawerItem("Prestadores", Icons.Default.Build) { navigateAndClose(onNavPrestadores) }
+                    }
+                    if (userRole != UserRole.ADMIN) {
+                        DrawerItem("Prestadores", Icons.Default.Build) { navigateAndClose(onNavPrestadores) }
+                    }
                     DrawerItem("Documentos", Icons.Default.Description) { navigateAndClose(onNavDocumentos) }
+                    DrawerItem("Chat Portaria", Icons.Default.Chat) { navigateAndClose(onNavChat) }
                     DrawerItem("Perfil/Configuração", Icons.Default.Settings) { navigateAndClose(onNavConfiguracao) }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -128,7 +152,7 @@ fun DashboardScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    }
                     HorizontalDivider(color = CrudDesign.primary.copy(alpha = 0.18f))
                     DrawerItem("Sair", Icons.AutoMirrored.Filled.Logout) { navigateAndClose(onLogout) }
                 }
@@ -161,7 +185,7 @@ fun DashboardScreen(
                 Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    HeroCard()
+                    HeroCard(userRole)
 
                     Spacer(modifier = Modifier.height(22.dp))
                     SectionTitle("Serviços e Gestão")
@@ -174,15 +198,18 @@ fun DashboardScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(
-                            listOf(
-                                QuickTile("Convidados", "Controle de Acesso", Icons.Default.Group, onNavConvidados),
-                                QuickTile("Encomendas", "Entregas do dia", Icons.Default.LocalShipping, onNavEncomendas),
-                                QuickTile("Prestadores", "Equipe de Serviço", Icons.Default.Build, onNavPrestadores),
-                                QuickTile("Veículos", "Entrada Garagem", Icons.Default.DirectionsCar, onNavVeiculos),
-                                QuickTile("Mural", "Comunicados", Icons.Default.Notifications, onNavAvisos),
-                                QuickTile("Documentos", "Regimento e arquivos", Icons.Default.Description, onNavDocumentos),
-                                QuickTile("Reservas", "Reservar espaços", Icons.Default.Event, onNavReservas),
-                                QuickTile("Ajustes", "Configurações", Icons.Default.Settings, onNavConfiguracao)
+                            dashboardTiles(
+                                userRole = userRole,
+                                onNavVeiculos = onNavVeiculos,
+                                onNavConvidados = onNavConvidados,
+                                onNavEncomendas = onNavEncomendas,
+                                onNavAvisos = onNavAvisos,
+                                onNavReservas = onNavReservas,
+                                onNavPrestadores = onNavPrestadores,
+                                onNavDocumentos = onNavDocumentos,
+                                onNavChat = onNavChat,
+                                onNavMoradores = onNavMoradores,
+                                onNavConfiguracao = onNavConfiguracao
                             )
                         ) { tile ->
                             GlassTile(tile)
@@ -228,7 +255,7 @@ private fun DrawerItem(label: String, icon: ImageVector, onClick: () -> Unit) {
 }
 
 @Composable
-private fun HeroCard() {
+private fun HeroCard(userRole: UserRole) {
     Card(
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -242,7 +269,12 @@ private fun HeroCard() {
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Bem-vindo ao SeCond", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Black)
-                Text("Seu portal para uma vida elevada", color = Color(0xFFE0DBFF), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                Text(
+                    if (userRole == UserRole.ADMIN) "Painel administrativo do condominio" else "Portal do morador",
+                    color = Color(0xFFE0DBFF),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Gestão Segura e Inteligente de Condomínios", color = Color(0xFFC9BEFF), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.6.sp)
             }
@@ -270,6 +302,46 @@ private data class QuickTile(
     val icon: ImageVector,
     val onClick: () -> Unit
 )
+
+private fun dashboardTiles(
+    userRole: UserRole,
+    onNavVeiculos: () -> Unit,
+    onNavConvidados: () -> Unit,
+    onNavEncomendas: () -> Unit,
+    onNavAvisos: () -> Unit,
+    onNavReservas: () -> Unit,
+    onNavPrestadores: () -> Unit,
+    onNavDocumentos: () -> Unit,
+    onNavChat: () -> Unit,
+    onNavMoradores: () -> Unit,
+    onNavConfiguracao: () -> Unit
+): List<QuickTile> {
+    if (userRole != UserRole.ADMIN) {
+        return listOf(
+            QuickTile("Mural", "Comunicados", Icons.Default.Notifications, onNavAvisos),
+            QuickTile("Convidados", "Controle de acesso", Icons.Default.Group, onNavConvidados),
+            QuickTile("Encomendas", "Avisos de chegada", Icons.Default.LocalShipping, onNavEncomendas),
+            QuickTile("Reservas", "Solicitar espacos", Icons.Default.Event, onNavReservas),
+            QuickTile("Documentos", "Regras e atas", Icons.Default.Description, onNavDocumentos),
+            QuickTile("Prestadores", "Servicos autorizados", Icons.Default.Build, onNavPrestadores),
+            QuickTile("Chat", "Falar com a portaria", Icons.Default.Chat, onNavChat),
+            QuickTile("Perfil", "Senha e conta", Icons.Default.Settings, onNavConfiguracao)
+        )
+    }
+
+    return listOf(
+        QuickTile("Moradores", "Cadastrar contas", Icons.Default.Group, onNavMoradores),
+        QuickTile("Convidados", "Controle de acesso", Icons.Default.Group, onNavConvidados),
+        QuickTile("Encomendas", "Chegada e retirada", Icons.Default.LocalShipping, onNavEncomendas),
+        QuickTile("Reservas", "Aprovar pedidos", Icons.Default.Event, onNavReservas),
+        QuickTile("Mural", "Comunicados e avisos", Icons.Default.Notifications, onNavAvisos),
+        QuickTile("Documentos", "Inserir arquivos", Icons.Default.Description, onNavDocumentos),
+        QuickTile("Prestadores", "Equipe de servico", Icons.Default.Build, onNavPrestadores),
+        QuickTile("Veiculos", "Entrada garagem", Icons.Default.DirectionsCar, onNavVeiculos),
+        QuickTile("Chat", "Atender moradores", Icons.Default.Chat, onNavChat),
+        QuickTile("Ajustes", "Configuracoes", Icons.Default.Settings, onNavConfiguracao)
+    )
+}
 
 @Composable
 private fun GlassTile(tile: QuickTile) {

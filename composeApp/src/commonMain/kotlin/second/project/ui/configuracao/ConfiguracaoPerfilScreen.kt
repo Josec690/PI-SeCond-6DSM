@@ -2,6 +2,7 @@ package second.project.ui.configuracao
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,77 +10,270 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
+import second.project.ui.components.crudOutlinedTextFieldColors
 
-@Suppress("unused")
 @Composable
 fun ConfiguracaoPerfilScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    userRole: UserRole,
     onBack: () -> Unit
 ) {
+    var senhaAtual by remember { mutableStateOf("") }
+    var novaSenha by remember { mutableStateOf("") }
+    var confirmarSenha by remember { mutableStateOf("") }
+    var mensagemSenha by remember { mutableStateOf("") }
+
     Column(
         Modifier
             .fillMaxSize()
             .background(CrudDesign.page)
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ScreenHeader(
-            title = "Configuração e Perfil",
-            subtitle = "Ajuste preferências da conta e aparência do sistema.",
+            title = "Ajuste e Perfil",
+            subtitle = if (userRole == UserRole.ADMIN) "Ajuste preferencias administrativas." else "Consulte seus dados e altere sua senha.",
             onBack = onBack
         )
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
-            shape = CrudDesign.cardShape,
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Text(
-                    "Preferências",
-                    color = CrudDesign.textPrimary,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Modo escuro", color = CrudDesign.textPrimary)
-                    Switch(checked = isDarkTheme, onCheckedChange = { onToggleTheme() })
-                }
-
-                Spacer(Modifier.height(6.dp))
-
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
-                ) {
-                    Text("VOLTAR")
+        if (userRole == UserRole.ADMIN) {
+            PasswordAndPreferencesCard(
+                title = "Perfil do Administrador",
+                description = "Responsavel por cadastros, documentos, encomendas e aprovacoes.",
+                senhaAtual = senhaAtual,
+                onSenhaAtualChange = { senhaAtual = it },
+                novaSenha = novaSenha,
+                onNovaSenhaChange = { novaSenha = it },
+                confirmarSenha = confirmarSenha,
+                onConfirmarSenhaChange = { confirmarSenha = it },
+                mensagemSenha = mensagemSenha,
+                onAlterarSenha = {
+                    mensagemSenha = validarSenha(senhaAtual, novaSenha, confirmarSenha) {
+                        senhaAtual = ""
+                        novaSenha = ""
+                        confirmarSenha = ""
+                    }
+                },
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme,
+                onBack = onBack,
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
+            BoxWithConstraints {
+                val wide = maxWidth >= 760.dp
+                if (wide) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.fillMaxWidth()) {
+                        MoradorProfileCard(Modifier.weight(1f))
+                        PasswordAndPreferencesCard(
+                            title = "Troca de Senha",
+                            description = "Altere a senha padrao recebida pela administracao.",
+                            senhaAtual = senhaAtual,
+                            onSenhaAtualChange = { senhaAtual = it },
+                            novaSenha = novaSenha,
+                            onNovaSenhaChange = { novaSenha = it },
+                            confirmarSenha = confirmarSenha,
+                            onConfirmarSenhaChange = { confirmarSenha = it },
+                            mensagemSenha = mensagemSenha,
+                            onAlterarSenha = {
+                                mensagemSenha = validarSenha(senhaAtual, novaSenha, confirmarSenha) {
+                                    senhaAtual = ""
+                                    novaSenha = ""
+                                    confirmarSenha = ""
+                                }
+                            },
+                            isDarkTheme = isDarkTheme,
+                            onToggleTheme = onToggleTheme,
+                            onBack = onBack,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.fillMaxWidth()) {
+                        MoradorProfileCard(Modifier.fillMaxWidth())
+                        PasswordAndPreferencesCard(
+                            title = "Troca de Senha",
+                            description = "Altere a senha padrao recebida pela administracao.",
+                            senhaAtual = senhaAtual,
+                            onSenhaAtualChange = { senhaAtual = it },
+                            novaSenha = novaSenha,
+                            onNovaSenhaChange = { novaSenha = it },
+                            confirmarSenha = confirmarSenha,
+                            onConfirmarSenhaChange = { confirmarSenha = it },
+                            mensagemSenha = mensagemSenha,
+                            onAlterarSenha = {
+                                mensagemSenha = validarSenha(senhaAtual, novaSenha, confirmarSenha) {
+                                    senhaAtual = ""
+                                    novaSenha = ""
+                                    confirmarSenha = ""
+                                }
+                            },
+                            isDarkTheme = isDarkTheme,
+                            onToggleTheme = onToggleTheme,
+                            onBack = onBack,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+private fun validarSenha(
+    senhaAtual: String,
+    novaSenha: String,
+    confirmarSenha: String,
+    onSuccess: () -> Unit
+): String {
+    return when {
+        senhaAtual.isBlank() || novaSenha.isBlank() -> "Preencha a senha atual e a nova senha."
+        novaSenha != confirmarSenha -> "A confirmacao nao confere."
+        else -> {
+            onSuccess()
+            "Senha alterada neste dispositivo."
+        }
+    }
+}
 
+@Composable
+private fun MoradorProfileCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
+        shape = CrudDesign.cardShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Dados do Morador", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            ProfileLine("Nome", "Morador SeCond")
+            ProfileLine("Bloco", "A")
+            ProfileLine("Apartamento", "1204")
+            ProfileLine("E-mail", "morador@second.com")
+            ProfileLine("Telefone", "(00) 00000-0000")
+
+            Spacer(Modifier.height(6.dp))
+            Text("Veiculo", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            ProfileLine("Modelo", "Cadastrado pela administracao")
+            ProfileLine("Placa", "ABC-1234")
+            ProfileLine("Cor", "Prata")
+        }
+    }
+}
+
+@Composable
+private fun ProfileLine(label: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+        Text(value, color = CrudDesign.textPrimary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun PasswordAndPreferencesCard(
+    title: String,
+    description: String,
+    senhaAtual: String,
+    onSenhaAtualChange: (String) -> Unit,
+    novaSenha: String,
+    onNovaSenhaChange: (String) -> Unit,
+    confirmarSenha: String,
+    onConfirmarSenhaChange: (String) -> Unit,
+    mensagemSenha: String,
+    onAlterarSenha: () -> Unit,
+    isDarkTheme: Boolean,
+    onToggleTheme: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
+        shape = CrudDesign.cardShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text(title, color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(description, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+
+            OutlinedTextField(
+                value = senhaAtual,
+                onValueChange = onSenhaAtualChange,
+                label = { Text("Senha atual") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = crudOutlinedTextFieldColors(),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
+            )
+
+            OutlinedTextField(
+                value = novaSenha,
+                onValueChange = onNovaSenhaChange,
+                label = { Text("Nova senha") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = crudOutlinedTextFieldColors(),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
+            )
+
+            OutlinedTextField(
+                value = confirmarSenha,
+                onValueChange = onConfirmarSenhaChange,
+                label = { Text("Confirmar nova senha") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = crudOutlinedTextFieldColors(),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
+            )
+
+            Button(
+                onClick = onAlterarSenha,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
+            ) {
+                Text("ALTERAR SENHA")
+            }
+
+            if (mensagemSenha.isNotBlank()) {
+                Text(mensagemSenha, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Modo escuro", color = CrudDesign.textPrimary)
+                Switch(checked = isDarkTheme, onCheckedChange = { onToggleTheme() })
+            }
+
+            Button(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
+            ) {
+                Text("VOLTAR")
+            }
+        }
+    }
+}

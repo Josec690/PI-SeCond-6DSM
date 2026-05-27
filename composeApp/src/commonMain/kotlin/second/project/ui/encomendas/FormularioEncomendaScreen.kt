@@ -25,13 +25,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.EncomendaViewModel
 
 @Composable
-fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
+fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
+    val isAdmin = userRole == UserRole.ADMIN
     Column(
         Modifier
             .fillMaxSize()
@@ -119,24 +121,26 @@ fun FormularioEncomendaScreen(viewModel: EncomendaViewModel, onSaved: () -> Unit
                 )
 
                 Spacer(Modifier.height(12.dp))
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CrudDesign.primary.copy(alpha = 0.12f)),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
-                        Checkbox(
-                            checked = viewModel.statusRetirada,
-                            onCheckedChange = { viewModel.statusRetirada = it }
-                        )
-                        Column(Modifier.padding(top = 6.dp)) {
-                            Text("Encomenda retirada", color = CrudDesign.textPrimary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                            Text(
-                                if (viewModel.statusRetirada) "Status atual: Retirada" else "Status atual: Pendente",
-                                color = CrudDesign.textSecondary,
-                                style = MaterialTheme.typography.bodySmall
+                if (isAdmin) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = CrudDesign.primary.copy(alpha = 0.12f)),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            Checkbox(
+                                checked = viewModel.statusRetirada,
+                                onCheckedChange = { viewModel.statusRetirada = it }
                             )
+                            Column(Modifier.padding(top = 6.dp)) {
+                                Text("Encomenda retirada", color = CrudDesign.textPrimary, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    if (viewModel.statusRetirada) "Status atual: Retirada" else "Status atual: Pendente",
+                                    color = CrudDesign.textSecondary,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
                 }

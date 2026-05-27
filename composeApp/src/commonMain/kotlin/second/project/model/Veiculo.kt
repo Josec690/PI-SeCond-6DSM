@@ -9,5 +9,8 @@ data class Veiculo(
     val modelo: String = "",
     val cor: String = "",
     val proprietario: String = "",
+    val moradorVinculado: String = "",
+    val bloco: String = "",
+    val apartamento: String = "",
     val ativo: Boolean = true
 )

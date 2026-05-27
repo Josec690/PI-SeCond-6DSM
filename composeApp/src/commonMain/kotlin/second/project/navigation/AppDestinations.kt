@@ -10,6 +10,8 @@ object Graph {
     const val RESERVAS = "reservas_graph"
     const val PRESTADORES = "prestadores_graph"
     const val DOCUMENTOS = "documentos_graph"
+    const val CHAT = "chat_graph"
+    const val MORADORES = "moradores_graph"
     const val CONFIGURACAO = "configuracao_graph"
 }
 
@@ -31,5 +33,7 @@ sealed class Screen(val route: String) {
     object PrestadorForm : Screen("p_form")
     object DocumentoList : Screen("d_list")
     object DocumentoForm : Screen("d_form")
+    object ChatPortaria : Screen("chat_portaria")
+    object CadastroMorador : Screen("cadastro_morador")
     object ConfiguracaoPerfil : Screen("config_perfil")
 }

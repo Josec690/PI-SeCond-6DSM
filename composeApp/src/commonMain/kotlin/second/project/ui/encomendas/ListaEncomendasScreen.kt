@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
 import second.project.viewmodel.EncomendaViewModel
@@ -46,7 +48,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 
 @Composable
-fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit, onBack: () -> Unit) {
+fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
+    val isAdmin = userRole == UserRole.ADMIN
     val total = viewModel.listaEncomendas.size
     val pendentes = viewModel.listaEncomendas.count { !it.statusRetirada }
     val listState = rememberLazyListState()
@@ -73,11 +76,13 @@ fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit,
                         Text("↑", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium)
                     }
                 }
-                FloatingActionButton(
-                    onClick = { viewModel.limparCampos(); onAddClick() },
-                    containerColor = CrudDesign.primary
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+                if (isAdmin) {
+                    FloatingActionButton(
+                        onClick = { viewModel.limparCampos(); onAddClick() },
+                        containerColor = CrudDesign.primary
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, tint = CrudDesign.textPrimary)
+                    }
                 }
             }
         }
@@ -90,7 +95,7 @@ fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit,
         ) {
             ScreenHeader(
                 title = "Encomendas",
-                subtitle = "Gerencie suas entregas recebidas.",
+                subtitle = if (isAdmin) "Confirme chegadas e retiradas de encomendas." else "Acompanhe avisos de chegada e retirada.",
                 onBack = onBack
             )
 
@@ -102,6 +107,11 @@ fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit,
             }
 
             Spacer(Modifier.height(14.dp))
+
+            if (!isAdmin && pendentes > 0) {
+                NotificationCard("Voce tem $pendentes encomenda(s) aguardando retirada na portaria.")
+                Spacer(Modifier.height(14.dp))
+            }
 
             TabRow(
                 selectedTabIndex = selectedTab,
@@ -157,11 +167,16 @@ fun ListaEncomendasScreen(viewModel: EncomendaViewModel, onAddClick: () -> Unit,
                                     if (encomenda.blocoTorre.isNotBlank()) append(" - Bloco/Torre ${encomenda.blocoTorre}")
                                 }
                                 Text(local, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                                IconButton(onClick = { viewModel.editar(encomenda); onAddClick() }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar encomenda", tint = CrudDesign.textPrimary)
-                                }
-                                IconButton(onClick = { viewModel.apagar(encomenda.id) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Apagar encomenda", tint = CrudDesign.danger)
+                                if (isAdmin) {
+                                    IconButton(onClick = { viewModel.alternarRetirada(encomenda) }) {
+                                        Icon(Icons.Default.Done, contentDescription = "Confirmar retirada", tint = CrudDesign.primary)
+                                    }
+                                    IconButton(onClick = { viewModel.editar(encomenda); onAddClick() }) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Editar encomenda", tint = CrudDesign.textPrimary)
+                                    }
+                                    IconButton(onClick = { viewModel.apagar(encomenda.id) }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Apagar encomenda", tint = CrudDesign.danger)
+                                    }
                                 }
                             }
                         }
@@ -185,6 +200,25 @@ private fun SummaryBadge(label: String, value: String, modifier: Modifier = Modi
             Text(label, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
             Text(value, color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun NotificationCard(text: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = CrudDesign.primary.copy(alpha = 0.16f)),
+        border = BorderStroke(1.dp, CrudDesign.primary.copy(alpha = 0.32f)),
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = text,
+            color = CrudDesign.textPrimary,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(14.dp)
+        )
     }
 }
 

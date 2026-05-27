@@ -11,6 +11,9 @@ class VeiculoViewModel(private val repo: RepositorioRemoto) {
     var modelo by mutableStateOf("")
     var cor by mutableStateOf("")
     var proprietario by mutableStateOf("")
+    var moradorVinculado by mutableStateOf("")
+    var bloco by mutableStateOf("")
+    var apartamento by mutableStateOf("")
     var ativo by mutableStateOf(true)
 
     var listaVeiculos = mutableStateListOf<Veiculo>()
@@ -26,7 +29,19 @@ class VeiculoViewModel(private val repo: RepositorioRemoto) {
 
     fun gravar() {
         scope.launch {
-            repo.salvarVeiculo(Veiculo(id, placa, modelo, cor, proprietario, ativo))
+            repo.salvarVeiculo(
+                Veiculo(
+                    id = id,
+                    placa = placa,
+                    modelo = modelo,
+                    cor = cor,
+                    proprietario = proprietario,
+                    moradorVinculado = moradorVinculado,
+                    bloco = bloco,
+                    apartamento = apartamento,
+                    ativo = ativo
+                )
+            )
             limparCampos()
             carregar()
         }
@@ -47,10 +62,26 @@ class VeiculoViewModel(private val repo: RepositorioRemoto) {
     }
 
     fun editar(v: Veiculo) {
-        id = v.id; placa = v.placa; modelo = v.modelo; cor = v.cor; proprietario = v.proprietario; ativo = v.ativo
+        id = v.id
+        placa = v.placa
+        modelo = v.modelo
+        cor = v.cor
+        proprietario = v.proprietario
+        moradorVinculado = v.moradorVinculado
+        bloco = v.bloco
+        apartamento = v.apartamento
+        ativo = v.ativo
     }
 
     fun limparCampos() {
-        id = ""; placa = ""; modelo = ""; cor = ""; proprietario = ""; ativo = true
+        id = ""
+        placa = ""
+        modelo = ""
+        cor = ""
+        proprietario = ""
+        moradorVinculado = ""
+        bloco = ""
+        apartamento = ""
+        ativo = true
     }
 }

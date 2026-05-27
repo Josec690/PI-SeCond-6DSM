@@ -51,12 +51,11 @@ import second.composeapp.generated.resources.Logo_SeCond_Dark_1
 import second.composeapp.generated.resources.Res
 import second.project.getPlatform
 import second.project.model.UserRole
-import second.project.preferences.PreferencesManager
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.crudOutlinedTextFieldColorsM3
 
 @Composable
-fun LoginScreen(onLogin: () -> Unit, onNavigateToCadastro: () -> Unit) {
+fun LoginScreen(onLogin: (UserRole) -> Unit, onNavigateToCadastro: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
@@ -107,9 +106,8 @@ fun LoginScreen(onLogin: () -> Unit, onNavigateToCadastro: () -> Unit) {
                                 errorMessage = "Contas de administrador só podem acessar via website/desktop."
                                 return@LoginPanel
                             }
-                            PreferencesManager.setUserRole(selectedRole.value)
                             errorMessage = ""
-                            onLogin()
+                            onLogin(selectedRole)
                         },
                         onNavigateToCadastro = onNavigateToCadastro
                     )
@@ -144,9 +142,8 @@ fun LoginScreen(onLogin: () -> Unit, onNavigateToCadastro: () -> Unit) {
                                 errorMessage = "Contas de administrador só podem acessar via website/desktop."
                                 return@LoginPanel
                             }
-                            PreferencesManager.setUserRole(selectedRole.value)
                             errorMessage = ""
-                            onLogin()
+                            onLogin(selectedRole)
                         },
                         onNavigateToCadastro = onNavigateToCadastro
                     )
@@ -309,10 +306,16 @@ private fun LoginPanel(
                 Text("ENTRAR", color = CrudDesign.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             }
 
+            Text(
+                "A conta do morador deve ser cadastrada previamente pela administracao.",
+                color = CrudDesign.textSecondary,
+                fontSize = 12.sp
+            )
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                Text("Não tem conta? ", color = CrudDesign.textSecondary, fontSize = 12.sp)
+                Text("Administrador novo? ", color = CrudDesign.textSecondary, fontSize = 12.sp)
                 Text(
-                    "Cadastre-se",
+                    "Cadastrar administrador",
                     color = CrudDesign.textPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
