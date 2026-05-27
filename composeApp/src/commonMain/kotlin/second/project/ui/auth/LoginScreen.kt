@@ -3,6 +3,8 @@ package second.project.ui.auth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -49,7 +51,6 @@ import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import second.composeapp.generated.resources.Logo_SeCond_Dark_1
 import second.composeapp.generated.resources.Res
-import second.project.getPlatform
 import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.crudOutlinedTextFieldColorsM3
@@ -101,11 +102,6 @@ fun LoginScreen(onLogin: (UserRole) -> Unit, onNavigateToCadastro: () -> Unit) {
                         onSelectRole = { selectedRole = it },
                         errorMessage = errorMessage,
                         onLogin = {
-                            val platformName = getPlatform().name.lowercase()
-                            if (selectedRole == UserRole.ADMIN && platformName.contains("android")) {
-                                errorMessage = "Contas de administrador só podem acessar via website/desktop."
-                                return@LoginPanel
-                            }
                             errorMessage = ""
                             onLogin(selectedRole)
                         },
@@ -116,6 +112,7 @@ fun LoginScreen(onLogin: (UserRole) -> Unit, onNavigateToCadastro: () -> Unit) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -137,11 +134,6 @@ fun LoginScreen(onLogin: (UserRole) -> Unit, onNavigateToCadastro: () -> Unit) {
                         onSelectRole = { selectedRole = it },
                         errorMessage = errorMessage,
                         onLogin = {
-                            val platformName = getPlatform().name.lowercase()
-                            if (selectedRole == UserRole.ADMIN && platformName.contains("android")) {
-                                errorMessage = "Contas de administrador só podem acessar via website/desktop."
-                                return@LoginPanel
-                            }
                             errorMessage = ""
                             onLogin(selectedRole)
                         },
@@ -291,6 +283,15 @@ private fun LoginPanel(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 RoleChip("Morador", selectedRole == UserRole.MORADOR) { onSelectRole(UserRole.MORADOR) }
                 RoleChip("Administrador", selectedRole == UserRole.ADMIN) { onSelectRole(UserRole.ADMIN) }
+            }
+
+            if (selectedRole == UserRole.ADMIN) {
+                Text(
+                    "A administracao tambem pode ser feita pelo mobile. Para melhor experiencia em muitos modulos, prefira a versao web.",
+                    color = CrudDesign.textSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
             if (errorMessage.isNotBlank()) {
