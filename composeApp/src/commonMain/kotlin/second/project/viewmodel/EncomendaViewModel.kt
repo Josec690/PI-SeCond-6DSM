@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import second.project.model.Encomenda
 import second.project.repository.RepositorioRemoto
+import second.project.validation.Validators
 
 class EncomendaViewModel(private val repo: RepositorioRemoto) {
     var id by mutableStateOf("")
@@ -19,45 +20,71 @@ class EncomendaViewModel(private val repo: RepositorioRemoto) {
     var transportadora by mutableStateOf("")
     var dataRecebimento by mutableStateOf("")
     var statusRetirada by mutableStateOf(false)
+    var mensagemErro by mutableStateOf("")
 
-    var listaEncomendas = mutableStateListOf<Encomenda>()
+    val listaEncomendas = mutableStateListOf<Encomenda>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun carregar() {
         scope.launch {
-            val dados = repo.listarEncomendas()
-            listaEncomendas.clear()
-            listaEncomendas.addAll(dados)
+            runCatching { repo.listarEncomendas() }
+                .onSuccess { dados ->
+                    listaEncomendas.clear()
+                    listaEncomendas.addAll(dados)
+                    mensagemErro = ""
+                }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel carregar encomendas." }
         }
     }
 
-    fun gravar() {
+    fun gravar(onSuccess: () -> Unit = {}) {
+        val validation = Validators.firstError(
+            Validators.required("Destinatario", destinatarioNome),
+            Validators.required("Apartamento", apartamento),
+            Validators.required("Bloco/Torre", blocoTorre),
+            Validators.required("Transportadora", transportadora),
+            Validators.required("Data de recebimento", dataRecebimento),
+            Validators.optionalDate("Data de recebimento", dataRecebimento)
+        )
+        if (validation.isNotBlank()) {
+            mensagemErro = validation
+            return
+        }
+
         scope.launch {
-            repo.salvarEncomenda(
-                Encomenda(
-                    id = id,
-                    destinatarioNome = destinatarioNome,
-                    apartamento = apartamento,
-                    blocoTorre = blocoTorre,
-                    codigoRastreio = codigoRastreio,
-                    transportadora = transportadora,
-                    dataRecebimento = dataRecebimento,
-                    statusRetirada = statusRetirada
+            runCatching {
+                repo.salvarEncomenda(
+                    Encomenda(
+                        id = id,
+                        destinatarioNome = destinatarioNome.trim(),
+                        apartamento = apartamento.trim(),
+                        blocoTorre = blocoTorre.trim(),
+                        codigoRastreio = codigoRastreio.trim(),
+                        transportadora = transportadora.trim(),
+                        dataRecebimento = dataRecebimento.trim(),
+                        statusRetirada = statusRetirada
+                    )
                 )
-            )
-            limparCampos()
-            carregar()
+            }.onSuccess {
+                limparCampos()
+                carregar()
+                onSuccess()
+            }.onFailure {
+                mensagemErro = it.message ?: "Nao foi possivel gravar encomenda."
+            }
         }
     }
 
     fun apagar(eid: String) {
         scope.launch {
-            repo.excluirEncomenda(eid)
-            carregar()
+            runCatching { repo.excluirEncomenda(eid) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel apagar encomenda." }
         }
     }
 
     fun editar(e: Encomenda) {
+        mensagemErro = ""
         id = e.id
         destinatarioNome = e.destinatarioNome
         apartamento = e.apartamento
@@ -70,8 +97,9 @@ class EncomendaViewModel(private val repo: RepositorioRemoto) {
 
     fun alternarRetirada(e: Encomenda) {
         scope.launch {
-            repo.salvarEncomenda(e.copy(statusRetirada = !e.statusRetirada))
-            carregar()
+            runCatching { repo.salvarEncomenda(e.copy(statusRetirada = !e.statusRetirada)) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel alterar retirada." }
         }
     }
 
@@ -84,6 +112,6 @@ class EncomendaViewModel(private val repo: RepositorioRemoto) {
         transportadora = ""
         dataRecebimento = ""
         statusRetirada = false
+        mensagemErro = ""
     }
 }
-

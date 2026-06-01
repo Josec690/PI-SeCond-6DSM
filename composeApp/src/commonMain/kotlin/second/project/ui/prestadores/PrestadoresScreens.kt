@@ -38,6 +38,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -47,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
+import second.project.ui.components.SimpleCalendarDialog
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.PrestadorViewModel
 
@@ -161,6 +166,8 @@ fun ListaPrestadoresScreen(viewModel: PrestadorViewModel, onAddClick: () -> Unit
 
 @Composable
 fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
+    var showDataVisitaCalendar by remember { mutableStateOf(false) }
+
     Column(
         Modifier
             .fillMaxSize()
@@ -187,7 +194,18 @@ fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit
                 OutlinedTextField(value = viewModel.empresa, onValueChange = { viewModel.empresa = it }, label = { Text("Empresa") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.telefone, onValueChange = { viewModel.telefone = it }, label = { Text("Telefone") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.servico, onValueChange = { viewModel.servico = it }, label = { Text("Serviço") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
-                OutlinedTextField(value = viewModel.dataVisita, onValueChange = { viewModel.dataVisita = it }, label = { Text("Data da visita") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
+                Box(Modifier.fillMaxWidth().clickable { showDataVisitaCalendar = true }) {
+                    OutlinedTextField(
+                        value = viewModel.dataVisita,
+                        onValueChange = { },
+                        label = { Text("Data da visita") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false
+                    )
+                }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Autorizado", color = CrudDesign.textPrimary)
@@ -195,10 +213,13 @@ fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit
                     Switch(checked = viewModel.autorizado, onCheckedChange = { viewModel.autorizado = it })
                 }
 
+                if (viewModel.mensagemErro.isNotBlank()) {
+                    Text(viewModel.mensagemErro, color = CrudDesign.danger, style = MaterialTheme.typography.bodySmall)
+                }
+
                 Button(
                     onClick = {
-                        viewModel.gravar()
-                        onSaved()
+                        viewModel.gravar(onSaved)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
@@ -214,6 +235,16 @@ fun FormularioPrestadorScreen(viewModel: PrestadorViewModel, onSaved: () -> Unit
                 }
             }
         }
+    }
+
+    if (showDataVisitaCalendar) {
+        SimpleCalendarDialog(
+            onDismiss = { showDataVisitaCalendar = false },
+            onDateSelected = { selectedDate ->
+                viewModel.dataVisita = selectedDate
+                showDataVisitaCalendar = false
+            }
+        )
     }
 }
 

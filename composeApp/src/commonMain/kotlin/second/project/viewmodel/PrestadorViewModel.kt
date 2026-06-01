@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import second.project.model.Prestador
 import second.project.repository.RepositorioRemoto
+import second.project.validation.Validators
 
 class PrestadorViewModel(private val repo: RepositorioRemoto) {
     var id by mutableStateOf("")
@@ -18,44 +19,69 @@ class PrestadorViewModel(private val repo: RepositorioRemoto) {
     var servico by mutableStateOf("")
     var dataVisita by mutableStateOf("")
     var autorizado by mutableStateOf(false)
+    var mensagemErro by mutableStateOf("")
 
-    var listaPrestadores = mutableStateListOf<Prestador>()
+    val listaPrestadores = mutableStateListOf<Prestador>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun carregar() {
         scope.launch {
-            val dados = repo.listarPrestadores()
-            listaPrestadores.clear()
-            listaPrestadores.addAll(dados)
+            runCatching { repo.listarPrestadores() }
+                .onSuccess { dados ->
+                    listaPrestadores.clear()
+                    listaPrestadores.addAll(dados)
+                    mensagemErro = ""
+                }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel carregar prestadores." }
         }
     }
 
-    fun gravar() {
+    fun gravar(onSuccess: () -> Unit = {}) {
+        val validation = Validators.firstError(
+            Validators.required("Nome", nome),
+            Validators.required("Empresa", empresa),
+            Validators.required("Telefone", telefone),
+            Validators.required("Servico", servico),
+            Validators.optionalDate("Data da visita", dataVisita)
+        )
+        if (validation.isNotBlank()) {
+            mensagemErro = validation
+            return
+        }
+
         scope.launch {
-            repo.salvarPrestador(
-                Prestador(
-                    id = id,
-                    nome = nome,
-                    empresa = empresa,
-                    telefone = telefone,
-                    servico = servico,
-                    dataVisita = dataVisita,
-                    autorizado = autorizado
+            runCatching {
+                repo.salvarPrestador(
+                    Prestador(
+                        id = id,
+                        nome = nome.trim(),
+                        empresa = empresa.trim(),
+                        telefone = telefone.trim(),
+                        servico = servico.trim(),
+                        dataVisita = dataVisita.trim(),
+                        autorizado = autorizado
+                    )
                 )
-            )
-            limparCampos()
-            carregar()
+            }.onSuccess {
+                limparCampos()
+                carregar()
+                onSuccess()
+            }.onFailure {
+                mensagemErro = it.message ?: "Nao foi possivel gravar prestador."
+            }
         }
     }
 
     fun apagar(pid: String) {
         scope.launch {
-            repo.excluirPrestador(pid)
-            carregar()
+            runCatching { repo.excluirPrestador(pid) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel apagar prestador." }
         }
     }
 
     fun editar(p: Prestador) {
+        mensagemErro = ""
         id = p.id
         nome = p.nome
         empresa = p.empresa
@@ -67,8 +93,9 @@ class PrestadorViewModel(private val repo: RepositorioRemoto) {
 
     fun alternarStatus(p: Prestador) {
         scope.launch {
-            repo.salvarPrestador(p.copy(autorizado = !p.autorizado))
-            carregar()
+            runCatching { repo.salvarPrestador(p.copy(autorizado = !p.autorizado)) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel alterar autorizacao." }
         }
     }
 
@@ -80,6 +107,6 @@ class PrestadorViewModel(private val repo: RepositorioRemoto) {
         servico = ""
         dataVisita = ""
         autorizado = false
+        mensagemErro = ""
     }
 }
-

@@ -92,8 +92,13 @@ fun FormularioConvidadoScreen(viewModel: ConvidadoViewModel, onSaved: () -> Unit
 
                 Spacer(Modifier.height(24.dp))
 
+                if (viewModel.mensagemErro.isNotBlank()) {
+                    Text(viewModel.mensagemErro, color = CrudDesign.danger, style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(10.dp))
+                }
+
                 Button(
-                    onClick = { viewModel.gravar(); onSaved() },
+                    onClick = { viewModel.gravar(onSaved) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),

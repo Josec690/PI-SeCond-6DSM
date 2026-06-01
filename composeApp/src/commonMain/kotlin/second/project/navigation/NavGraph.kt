@@ -32,6 +32,10 @@ fun AppNavigation(
     rViewModel: ReservaViewModel,
     pViewModel: PrestadorViewModel,
     dViewModel: DocumentoViewModel,
+    mViewModel: MoradorViewModel,
+    perfilViewModel: PerfilViewModel,
+    chatViewModel: ChatPortariaViewModel,
+    authViewModel: AuthViewModel,
     userRole: UserRole,
     onUserRoleChange: (UserRole) -> Unit,
     isDarkTheme: Boolean,
@@ -42,6 +46,7 @@ fun AppNavigation(
             navigation(startDestination = Screen.Login.route, route = Graph.AUTH) {
                 composable(Screen.Login.route) {
                     LoginScreen(
+                        authViewModel = authViewModel,
                         onLogin = { role ->
                             onUserRoleChange(role)
                             navController.navigate(Graph.APP) {
@@ -49,12 +54,16 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
-                        onNavigateToCadastro = { navController.navigateSingleTopTo(Screen.Cadastro.route) }
+                        onNavigateToCadastro = {
+                            authViewModel.clearError()
+                            navController.navigateSingleTopTo(Screen.Cadastro.route)
+                        }
                     )
                 }
 
                 composable(Screen.Cadastro.route) {
                     CadastroScreen(
+                        authViewModel = authViewModel,
                         onRegisterSuccess = {
                             onUserRoleChange(UserRole.ADMIN)
                             navController.navigate(Graph.APP) {
@@ -62,7 +71,10 @@ fun AppNavigation(
                                 launchSingleTop = true
                             }
                         },
-                        onBackToLogin = { navController.navigateSingleTopTo(Screen.Login.route) }
+                        onBackToLogin = {
+                            authViewModel.clearError()
+                            navController.navigateSingleTopTo(Screen.Login.route)
+                        }
                     )
                 }
 
@@ -85,6 +97,8 @@ fun AppNavigation(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         onLogout = {
+                            authViewModel.logout()
+                            onUserRoleChange(UserRole.MORADOR)
                             navController.navigate(Graph.AUTH) {
                                 popUpTo(Graph.APP) { inclusive = true }
                                 launchSingleTop = true
@@ -231,6 +245,7 @@ fun AppNavigation(
                 navigation(startDestination = Screen.ChatPortaria.route, route = Graph.CHAT) {
                     composable(Screen.ChatPortaria.route) {
                         ChatPortariaScreen(
+                            viewModel = chatViewModel,
                             userRole = userRole,
                             onBack = { navController.popBackStack() }
                         )
@@ -240,6 +255,7 @@ fun AppNavigation(
                 navigation(startDestination = Screen.CadastroMorador.route, route = Graph.MORADORES) {
                     composable(Screen.CadastroMorador.route) {
                         CadastroMoradorScreen(
+                            viewModel = mViewModel,
                             onBack = { navController.popBackStack() }
                         )
                     }
@@ -250,6 +266,7 @@ fun AppNavigation(
                         isDarkTheme = isDarkTheme,
                         onToggleTheme = onToggleTheme,
                         userRole = userRole,
+                        perfilViewModel = perfilViewModel,
                         onBack = { navController.popBackStack() }
                     )
                 }

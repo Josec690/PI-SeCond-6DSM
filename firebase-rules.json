@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "usuarios": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || root.child('usuarios').child(auth.uid).child('role').val() === 'admin')"
+      }
+    },
+    "veiculos": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "convidados": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "encomendas": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "avisos": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "reservas": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "prestadores": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "documentos": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "documentFiles": {
+      ".read": "auth != null",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "resumoPublico": {
+      ".read": true,
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('role').val() === 'admin'"
+    },
+    "chatPortaria": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('role').val() === 'admin'",
+      "$residentUid": {
+        ".read": "auth != null && (auth.uid === $residentUid || root.child('usuarios').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $residentUid || root.child('usuarios').child(auth.uid).child('role').val() === 'admin')",
+        "mensagens": {
+          "$messageId": {
+            ".validate": "newData.hasChildren(['conversationId', 'residentName', 'author', 'authorUid', 'authorRole', 'text', 'timestamp']) && newData.child('conversationId').val() === $residentUid && newData.child('authorUid').val() === auth.uid && ((newData.child('authorRole').val() === 'morador' && auth.uid === $residentUid) || (newData.child('authorRole').val() === 'admin' && root.child('usuarios').child(auth.uid).child('role').val() === 'admin')) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('timestamp').isNumber()"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,9 @@
 package second.project.ui.avisos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,16 +24,23 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
+import second.project.ui.components.SimpleCalendarDialog
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.AvisoViewModel
 
 @Composable
 fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit, onBack: () -> Unit) {
+    var showDataPublicacaoCalendar by remember { mutableStateOf(false) }
+
     Column(
         Modifier
             .fillMaxSize()
@@ -98,15 +107,19 @@ fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit, onBack
                     singleLine = true
                 )
                 Spacer(Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = viewModel.dataPublicacao,
-                    onValueChange = { viewModel.dataPublicacao = it },
-                    label = { Text("Data de Publicação") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = CrudDesign.fieldShape,
-                    colors = crudOutlinedTextFieldColors(),
-                    singleLine = true
-                )
+                Box(Modifier.fillMaxWidth().clickable { showDataPublicacaoCalendar = true }) {
+                    OutlinedTextField(
+                        value = viewModel.dataPublicacao,
+                        onValueChange = { },
+                        label = { Text("Data de Publicação") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = CrudDesign.fieldShape,
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false
+                    )
+                }
 
                 Spacer(Modifier.height(12.dp))
                 Card(
@@ -133,8 +146,13 @@ fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit, onBack
 
                 Spacer(Modifier.height(24.dp))
 
+                if (viewModel.mensagemErro.isNotBlank()) {
+                    Text(viewModel.mensagemErro, color = CrudDesign.danger, style = MaterialTheme.typography.bodySmall)
+                    Spacer(Modifier.height(10.dp))
+                }
+
                 Button(
-                    onClick = { viewModel.gravar(); onSaved() },
+                    onClick = { viewModel.gravar(onSaved) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -158,6 +176,16 @@ fun FormularioAvisoScreen(viewModel: AvisoViewModel, onSaved: () -> Unit, onBack
                 }
             }
         }
+    }
+
+    if (showDataPublicacaoCalendar) {
+        SimpleCalendarDialog(
+            onDismiss = { showDataPublicacaoCalendar = false },
+            onDateSelected = { selectedDate ->
+                viewModel.dataPublicacao = selectedDate
+                showDataPublicacaoCalendar = false
+            }
+        )
     }
 }
 

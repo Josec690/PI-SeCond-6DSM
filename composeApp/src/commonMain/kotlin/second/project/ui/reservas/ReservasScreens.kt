@@ -38,7 +38,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -49,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import second.project.model.UserRole
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
+import second.project.ui.components.SimpleCalendarDialog
 import second.project.ui.components.crudOutlinedTextFieldColors
 import second.project.viewmodel.ReservaViewModel
 
@@ -166,6 +170,8 @@ fun ListaReservasScreen(viewModel: ReservaViewModel, onAddClick: () -> Unit, onB
 @Composable
 fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, onBack: () -> Unit, userRole: UserRole) {
     val isAdmin = userRole == UserRole.ADMIN
+    var showDataReservaCalendar by remember { mutableStateOf(false) }
+
     Column(
         Modifier
             .fillMaxSize()
@@ -190,7 +196,18 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, on
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(value = viewModel.area, onValueChange = { viewModel.area = it }, label = { Text("Área") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.morador, onValueChange = { viewModel.morador = it }, label = { Text("Morador") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
-                OutlinedTextField(value = viewModel.dataReserva, onValueChange = { viewModel.dataReserva = it }, label = { Text("Data") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
+                Box(Modifier.fillMaxWidth().clickable { showDataReservaCalendar = true }) {
+                    OutlinedTextField(
+                        value = viewModel.dataReserva,
+                        onValueChange = { },
+                        label = { Text("Data") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = crudOutlinedTextFieldColors(),
+                        singleLine = true,
+                        readOnly = true,
+                        enabled = false
+                    )
+                }
                 OutlinedTextField(value = viewModel.horario, onValueChange = { viewModel.horario = it }, label = { Text("Horário") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), singleLine = true)
                 OutlinedTextField(value = viewModel.observacoes, onValueChange = { viewModel.observacoes = it }, label = { Text("Observações") }, modifier = Modifier.fillMaxWidth(), colors = crudOutlinedTextFieldColors(), minLines = 3)
 
@@ -204,11 +221,14 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, on
                     Text("A reserva sera enviada como pendente para aprovacao.", color = CrudDesign.textSecondary)
                 }
 
+                if (viewModel.mensagemErro.isNotBlank()) {
+                    Text(viewModel.mensagemErro, color = CrudDesign.danger, style = MaterialTheme.typography.bodySmall)
+                }
+
                 Button(
                     onClick = {
                         if (!isAdmin) viewModel.confirmada = false
-                        viewModel.gravar()
-                        onSaved()
+                        viewModel.gravar(onSaved)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
@@ -224,6 +244,16 @@ fun FormularioReservaScreen(viewModel: ReservaViewModel, onSaved: () -> Unit, on
                 }
             }
         }
+    }
+
+    if (showDataReservaCalendar) {
+        SimpleCalendarDialog(
+            onDismiss = { showDataReservaCalendar = false },
+            onDateSelected = { selectedDate ->
+                viewModel.dataReserva = selectedDate
+                showDataReservaCalendar = false
+            }
+        )
     }
 }
 

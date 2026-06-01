@@ -1,10 +1,15 @@
-
 package second.project.viewmodel
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import second.project.model.Convidado
 import second.project.repository.RepositorioRemoto
-import kotlinx.coroutines.*
+import second.project.validation.Validators
 
 class ConvidadoViewModel(private val repo: RepositorioRemoto) {
     var id by mutableStateOf("")
@@ -13,45 +18,90 @@ class ConvidadoViewModel(private val repo: RepositorioRemoto) {
     var email by mutableStateOf("")
     var localAlugado by mutableStateOf("")
     var ativo by mutableStateOf(true)
+    var mensagemErro by mutableStateOf("")
 
-    var listaConvidados = mutableStateListOf<Convidado>()
+    val listaConvidados = mutableStateListOf<Convidado>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun carregar() {
         scope.launch {
-            val dados = repo.listarConvidados()
-            listaConvidados.clear()
-            listaConvidados.addAll(dados)
+            runCatching { repo.listarConvidados() }
+                .onSuccess { dados ->
+                    listaConvidados.clear()
+                    listaConvidados.addAll(dados)
+                    mensagemErro = ""
+                }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel carregar convidados." }
         }
     }
 
-    fun gravar() {
+    fun gravar(onSuccess: () -> Unit = {}) {
+        val validation = Validators.firstError(
+            Validators.required("Nome", nome),
+            Validators.required("Telefone", telefone),
+            Validators.email(email),
+            Validators.required("Local alugado", localAlugado)
+        )
+        if (validation.isNotBlank()) {
+            mensagemErro = validation
+            return
+        }
+
         scope.launch {
-            repo.salvarConvidado(Convidado(id, nome, telefone, email, localAlugado, ativo))
-            limparCampos()
-            carregar()
+            runCatching {
+                repo.salvarConvidado(
+                    Convidado(
+                        id = id,
+                        nome = nome.trim(),
+                        telefone = telefone.trim(),
+                        email = email.trim(),
+                        localAlugado = localAlugado.trim(),
+                        ativo = ativo
+                    )
+                )
+            }.onSuccess {
+                limparCampos()
+                carregar()
+                onSuccess()
+            }.onFailure {
+                mensagemErro = it.message ?: "Nao foi possivel gravar convidado."
+            }
         }
     }
 
     fun apagar(cid: String) {
         scope.launch {
-            repo.excluirConvidado(cid)
-            carregar()
+            runCatching { repo.excluirConvidado(cid) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel apagar convidado." }
         }
     }
 
     fun alternarStatus(c: Convidado) {
         scope.launch {
-            repo.salvarConvidado(c.copy(ativo = !c.ativo))
-            carregar()
+            runCatching { repo.salvarConvidado(c.copy(ativo = !c.ativo)) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel alterar status." }
         }
     }
 
     fun editar(c: Convidado) {
-        id = c.id; nome = c.nome; telefone = c.telefone; email = c.email; localAlugado = c.localAlugado; ativo = c.ativo
+        mensagemErro = ""
+        id = c.id
+        nome = c.nome
+        telefone = c.telefone
+        email = c.email
+        localAlugado = c.localAlugado
+        ativo = c.ativo
     }
 
     fun limparCampos() {
-        id = ""; nome = ""; telefone = ""; email = ""; localAlugado = ""; ativo = true
+        id = ""
+        nome = ""
+        telefone = ""
+        email = ""
+        localAlugado = ""
+        ativo = true
+        mensagemErro = ""
     }
 }

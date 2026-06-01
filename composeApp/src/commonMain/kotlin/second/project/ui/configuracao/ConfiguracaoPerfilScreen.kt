@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,21 +31,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import second.project.model.UserRole
+import second.project.model.UsuarioPerfil
+import second.project.model.Veiculo
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.ScreenHeader
 import second.project.ui.components.crudOutlinedTextFieldColors
+import second.project.viewmodel.PerfilViewModel
 
 @Composable
 fun ConfiguracaoPerfilScreen(
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
     userRole: UserRole,
+    perfilViewModel: PerfilViewModel,
     onBack: () -> Unit
 ) {
     var senhaAtual by remember { mutableStateOf("") }
     var novaSenha by remember { mutableStateOf("") }
     var confirmarSenha by remember { mutableStateOf("") }
     var mensagemSenha by remember { mutableStateOf("") }
+
+    LaunchedEffect(userRole) {
+        if (userRole == UserRole.ADMIN) {
+            perfilViewModel.carregarResumoCondominio()
+        } else {
+            perfilViewModel.carregar()
+        }
+    }
 
     Column(
         Modifier
@@ -61,6 +74,18 @@ fun ConfiguracaoPerfilScreen(
         )
 
         if (userRole == UserRole.ADMIN) {
+            CondominioSettingsCard(
+                totalApartamentos = perfilViewModel.totalApartamentos,
+                onTotalApartamentosChange = { value ->
+                    perfilViewModel.totalApartamentos = value.filter { it.isDigit() }
+                },
+                totalMoradores = perfilViewModel.totalMoradores,
+                carregando = perfilViewModel.carregando,
+                mensagem = perfilViewModel.mensagemConfiguracao.ifBlank { perfilViewModel.mensagemErro },
+                onSalvar = perfilViewModel::salvarTotalApartamentos,
+                modifier = Modifier.fillMaxWidth()
+            )
+
             PasswordAndPreferencesCard(
                 title = "Perfil do Administrador",
                 description = "Responsavel por cadastros, documentos, encomendas e aprovacoes.",
@@ -88,7 +113,13 @@ fun ConfiguracaoPerfilScreen(
                 val wide = maxWidth >= 760.dp
                 if (wide) {
                     Row(horizontalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.fillMaxWidth()) {
-                        MoradorProfileCard(Modifier.weight(1f))
+                        MoradorProfileCard(
+                            perfil = perfilViewModel.perfil,
+                            veiculo = perfilViewModel.veiculo,
+                            carregando = perfilViewModel.carregando,
+                            mensagemErro = perfilViewModel.mensagemErro,
+                            modifier = Modifier.weight(1f)
+                        )
                         PasswordAndPreferencesCard(
                             title = "Troca de Senha",
                             description = "Altere a senha padrao recebida pela administracao.",
@@ -114,7 +145,13 @@ fun ConfiguracaoPerfilScreen(
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.fillMaxWidth()) {
-                        MoradorProfileCard(Modifier.fillMaxWidth())
+                        MoradorProfileCard(
+                            perfil = perfilViewModel.perfil,
+                            veiculo = perfilViewModel.veiculo,
+                            carregando = perfilViewModel.carregando,
+                            mensagemErro = perfilViewModel.mensagemErro,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                         PasswordAndPreferencesCard(
                             title = "Troca de Senha",
                             description = "Altere a senha padrao recebida pela administracao.",
@@ -144,6 +181,57 @@ fun ConfiguracaoPerfilScreen(
     }
 }
 
+@Composable
+private fun CondominioSettingsCard(
+    totalApartamentos: String,
+    onTotalApartamentosChange: (String) -> Unit,
+    totalMoradores: Int,
+    carregando: Boolean,
+    mensagem: String,
+    onSalvar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
+        shape = CrudDesign.cardShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Dados do Condominio", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "Defina a quantidade total de apartamentos exibida na tela inicial. O total de residentes e calculado pelos moradores cadastrados.",
+                color = CrudDesign.textSecondary,
+                style = MaterialTheme.typography.bodySmall
+            )
+
+            OutlinedTextField(
+                value = totalApartamentos,
+                onValueChange = onTotalApartamentosChange,
+                label = { Text("Quantidade de apartamentos") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = crudOutlinedTextFieldColors(),
+                singleLine = true
+            )
+
+            ProfileLine("Residentes cadastrados", totalMoradores.toString())
+
+            Button(
+                onClick = onSalvar,
+                enabled = !carregando,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
+            ) {
+                Text(if (carregando) "SALVANDO..." else "SALVAR APARTAMENTOS")
+            }
+
+            if (mensagem.isNotBlank()) {
+                Text(mensagem, color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
 private fun validarSenha(
     senhaAtual: String,
     novaSenha: String,
@@ -161,7 +249,13 @@ private fun validarSenha(
 }
 
 @Composable
-private fun MoradorProfileCard(modifier: Modifier = Modifier) {
+private fun MoradorProfileCard(
+    perfil: UsuarioPerfil?,
+    veiculo: Veiculo?,
+    carregando: Boolean,
+    mensagemErro: String,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = CrudDesign.surface),
@@ -170,19 +264,31 @@ private fun MoradorProfileCard(modifier: Modifier = Modifier) {
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("Dados do Morador", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            ProfileLine("Nome", "Morador SeCond")
-            ProfileLine("Bloco", "A")
-            ProfileLine("Apartamento", "1204")
-            ProfileLine("E-mail", "morador@second.com")
-            ProfileLine("Telefone", "(00) 00000-0000")
+
+            if (carregando) {
+                Text("Carregando dados do Firebase...", color = CrudDesign.textSecondary, style = MaterialTheme.typography.bodySmall)
+            }
+            if (mensagemErro.isNotBlank()) {
+                Text(mensagemErro, color = CrudDesign.danger, style = MaterialTheme.typography.bodySmall)
+            }
+
+            ProfileLine("Nome", perfil?.nome.orEmpty().fallback("Nao informado"))
+            ProfileLine("Bloco", perfil?.bloco.orEmpty().fallback("Nao informado"))
+            ProfileLine("Apartamento", perfil?.apartamento.orEmpty().fallback("Nao informado"))
+            ProfileLine("E-mail", perfil?.email.orEmpty().fallback("Nao informado"))
+            ProfileLine("Telefone", perfil?.telefone.orEmpty().fallback("Nao informado"))
 
             Spacer(Modifier.height(6.dp))
             Text("Veiculo", color = CrudDesign.textPrimary, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            ProfileLine("Modelo", "Cadastrado pela administracao")
-            ProfileLine("Placa", "ABC-1234")
-            ProfileLine("Cor", "Prata")
+            ProfileLine("Modelo", veiculo?.modelo.orEmpty().fallback("Nenhum veiculo vinculado"))
+            ProfileLine("Placa", veiculo?.placa.orEmpty().fallback("Nao informado"))
+            ProfileLine("Cor", veiculo?.cor.orEmpty().fallback("Nao informado"))
         }
     }
+}
+
+private fun String.fallback(value: String): String {
+    return if (isBlank()) value else this
 }
 
 @Composable

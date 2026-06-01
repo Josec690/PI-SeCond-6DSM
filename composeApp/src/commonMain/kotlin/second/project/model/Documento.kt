@@ -9,6 +9,7 @@ data class Documento(
     val tipo: String = "",
     val descricao: String = "",
     val dataCadastro: String = "",
+    val arquivoNome: String = "",
     val arquivoUrl: String = ""
 )
 

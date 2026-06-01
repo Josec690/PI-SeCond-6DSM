@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import second.project.model.Reserva
 import second.project.repository.RepositorioRemoto
+import second.project.validation.Validators
 
 class ReservaViewModel(private val repo: RepositorioRemoto) {
     var id by mutableStateOf("")
@@ -18,44 +19,69 @@ class ReservaViewModel(private val repo: RepositorioRemoto) {
     var horario by mutableStateOf("")
     var observacoes by mutableStateOf("")
     var confirmada by mutableStateOf(false)
+    var mensagemErro by mutableStateOf("")
 
-    var listaReservas = mutableStateListOf<Reserva>()
+    val listaReservas = mutableStateListOf<Reserva>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun carregar() {
         scope.launch {
-            val dados = repo.listarReservas()
-            listaReservas.clear()
-            listaReservas.addAll(dados)
+            runCatching { repo.listarReservas() }
+                .onSuccess { dados ->
+                    listaReservas.clear()
+                    listaReservas.addAll(dados)
+                    mensagemErro = ""
+                }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel carregar reservas." }
         }
     }
 
-    fun gravar() {
+    fun gravar(onSuccess: () -> Unit = {}) {
+        val validation = Validators.firstError(
+            Validators.required("Area", area),
+            Validators.required("Morador", morador),
+            Validators.required("Data", dataReserva),
+            Validators.optionalDate("Data", dataReserva),
+            Validators.required("Horario", horario)
+        )
+        if (validation.isNotBlank()) {
+            mensagemErro = validation
+            return
+        }
+
         scope.launch {
-            repo.salvarReserva(
-                Reserva(
-                    id = id,
-                    area = area,
-                    morador = morador,
-                    dataReserva = dataReserva,
-                    horario = horario,
-                    observacoes = observacoes,
-                    confirmada = confirmada
+            runCatching {
+                repo.salvarReserva(
+                    Reserva(
+                        id = id,
+                        area = area.trim(),
+                        morador = morador.trim(),
+                        dataReserva = dataReserva.trim(),
+                        horario = horario.trim(),
+                        observacoes = observacoes.trim(),
+                        confirmada = confirmada
+                    )
                 )
-            )
-            limparCampos()
-            carregar()
+            }.onSuccess {
+                limparCampos()
+                carregar()
+                onSuccess()
+            }.onFailure {
+                mensagemErro = it.message ?: "Nao foi possivel gravar reserva."
+            }
         }
     }
 
     fun apagar(rid: String) {
         scope.launch {
-            repo.excluirReserva(rid)
-            carregar()
+            runCatching { repo.excluirReserva(rid) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel apagar reserva." }
         }
     }
 
     fun editar(r: Reserva) {
+        mensagemErro = ""
         id = r.id
         area = r.area
         morador = r.morador
@@ -67,8 +93,9 @@ class ReservaViewModel(private val repo: RepositorioRemoto) {
 
     fun alternarStatus(r: Reserva) {
         scope.launch {
-            repo.salvarReserva(r.copy(confirmada = !r.confirmada))
-            carregar()
+            runCatching { repo.salvarReserva(r.copy(confirmada = !r.confirmada)) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel alterar reserva." }
         }
     }
 
@@ -80,6 +107,6 @@ class ReservaViewModel(private val repo: RepositorioRemoto) {
         horario = ""
         observacoes = ""
         confirmada = false
+        mensagemErro = ""
     }
 }
-

@@ -8,12 +8,15 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import second.project.navigation.AppNavigation
 import second.project.model.UserRole
 import second.project.preferences.PreferencesManager
+import second.project.repository.FirebaseAuthRepository
 import second.project.repository.RepositorioRemoto
+import second.project.viewmodel.AuthViewModel
 import second.project.ui.components.CrudDesign
 import second.project.viewmodel.VeiculoViewModel
 import second.project.viewmodel.ConvidadoViewModel
@@ -22,17 +25,25 @@ import second.project.viewmodel.AvisoViewModel
 import second.project.viewmodel.ReservaViewModel
 import second.project.viewmodel.PrestadorViewModel
 import second.project.viewmodel.DocumentoViewModel
+import second.project.viewmodel.MoradorViewModel
+import second.project.viewmodel.PerfilViewModel
+import second.project.viewmodel.ChatPortariaViewModel
 
 @Composable
 fun App() {
-    val repo = RepositorioRemoto()
-    val vViewModel = VeiculoViewModel(repo)
-    val cViewModel = ConvidadoViewModel(repo)
-    val eViewModel = EncomendaViewModel(repo)
-    val aViewModel = AvisoViewModel(repo)
-    val rViewModel = ReservaViewModel(repo)
-    val pViewModel = PrestadorViewModel(repo)
-    val dViewModel = DocumentoViewModel(repo)
+    val repo = remember { RepositorioRemoto() }
+    val authRepository = remember { FirebaseAuthRepository() }
+    val authViewModel = remember { AuthViewModel(authRepository) }
+    val vViewModel = remember { VeiculoViewModel(repo, authRepository) }
+    val cViewModel = remember { ConvidadoViewModel(repo) }
+    val eViewModel = remember { EncomendaViewModel(repo) }
+    val aViewModel = remember { AvisoViewModel(repo) }
+    val rViewModel = remember { ReservaViewModel(repo) }
+    val pViewModel = remember { PrestadorViewModel(repo) }
+    val dViewModel = remember { DocumentoViewModel(repo) }
+    val mViewModel = remember { MoradorViewModel(authRepository, repo) }
+    val perfilViewModel = remember { PerfilViewModel(repo) }
+    val chatViewModel = remember { ChatPortariaViewModel(repo) }
     var isDarkTheme by rememberSaveable { mutableStateOf(PreferencesManager.isDarkThemeEnabled()) }
     var userRole by rememberSaveable { mutableStateOf(UserRole.from(PreferencesManager.getUserRole())) }
 
@@ -67,6 +78,10 @@ fun App() {
             rViewModel = rViewModel,
             pViewModel = pViewModel,
             dViewModel = dViewModel,
+            mViewModel = mViewModel,
+            perfilViewModel = perfilViewModel,
+            chatViewModel = chatViewModel,
+            authViewModel = authViewModel,
             userRole = userRole,
             onUserRoleChange = { role ->
                 userRole = role

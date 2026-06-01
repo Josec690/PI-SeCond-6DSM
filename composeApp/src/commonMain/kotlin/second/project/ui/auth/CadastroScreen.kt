@@ -1,6 +1,7 @@
 package second.project.ui.auth
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,15 +50,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
-import second.composeapp.generated.resources.Logo_SeCond_Dark_1
+import second.composeapp.generated.resources.Logo_SeCond_Dark_2_removebg_preview
 import second.composeapp.generated.resources.Res
 import second.project.model.UserRole
-import second.project.preferences.PreferencesManager
 import second.project.ui.components.CrudDesign
 import second.project.ui.components.crudOutlinedTextFieldColorsM3
+import second.project.viewmodel.AuthViewModel
 
 @Composable
-fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
+fun CadastroScreen(authViewModel: AuthViewModel, onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
     var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
@@ -64,6 +66,10 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
     var senhaVisivel by remember { mutableStateOf(false) }
     var confirmarVisivel by remember { mutableStateOf(false) }
     val selectedRole = UserRole.ADMIN
+
+    LaunchedEffect(Unit) {
+        authViewModel.carregarResumoPublico()
+    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -86,30 +92,48 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
                     BrandPanel(
                         modifier = Modifier.weight(1f),
                         title = "Seu Portal para uma\nVida Elevada.",
+                        residentes = authViewModel.resumoCondominio.totalMoradores,
+                        apartamentos = authViewModel.resumoCondominio.totalApartamentos,
                         subtitle = "Faça parte da sua comunidade residencial moderna hoje."
                     )
 
                     RegisterPanel(
                         modifier = Modifier.weight(1f),
                         nome = nome,
-                        onNomeChange = { nome = it },
+                        onNomeChange = {
+                            nome = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         email = email,
-                        onEmailChange = { email = it },
+                        onEmailChange = {
+                            email = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         senha = senha,
-                        onSenhaChange = { senha = it },
+                        onSenhaChange = {
+                            senha = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         confirmarSenha = confirmarSenha,
-                        onConfirmarSenhaChange = { confirmarSenha = it },
+                        onConfirmarSenhaChange = {
+                            confirmarSenha = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         senhaVisivel = senhaVisivel,
                         onToggleSenha = { senhaVisivel = !senhaVisivel },
                         confirmarVisivel = confirmarVisivel,
                         onToggleConfirmar = { confirmarVisivel = !confirmarVisivel },
                         selectedRole = selectedRole,
                         onSelectRole = { },
+                        errorMessage = authViewModel.errorMessage,
+                        nomeError = authViewModel.cadastroNomeError,
+                        emailError = authViewModel.cadastroEmailError,
+                        senhaError = authViewModel.cadastroSenhaError,
+                        confirmarSenhaError = authViewModel.cadastroConfirmarSenhaError,
+                        isLoading = authViewModel.isLoading,
+                        statusMessage = authViewModel.statusMessage,
                         onRegister = {
-                            if (senha.isNotBlank() && senha == confirmarSenha) {
-                                PreferencesManager.setUserRole(UserRole.ADMIN.value)
-                                onRegisterSuccess()
-                            }
+                            authViewModel.cadastrarAdministrador(nome, email, senha, confirmarSenha, onRegisterSuccess)
                         },
                         onBackToLogin = onBackToLogin
                     )
@@ -123,31 +147,49 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
                 ) {
                     BrandPanel(
                         modifier = Modifier.fillMaxWidth(),
-                        title = "SeCond",
+                        title = "Seu Portal para uma\nVida Elevada.",
+                        residentes = authViewModel.resumoCondominio.totalMoradores,
+                        apartamentos = authViewModel.resumoCondominio.totalApartamentos,
                         subtitle = "Faça parte da sua comunidade residencial moderna hoje."
                     )
 
                     RegisterPanel(
                         modifier = Modifier.fillMaxWidth(),
                         nome = nome,
-                        onNomeChange = { nome = it },
+                        onNomeChange = {
+                            nome = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         email = email,
-                        onEmailChange = { email = it },
+                        onEmailChange = {
+                            email = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         senha = senha,
-                        onSenhaChange = { senha = it },
+                        onSenhaChange = {
+                            senha = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         confirmarSenha = confirmarSenha,
-                        onConfirmarSenhaChange = { confirmarSenha = it },
+                        onConfirmarSenhaChange = {
+                            confirmarSenha = it
+                            authViewModel.clearCadastroFieldErrors()
+                        },
                         senhaVisivel = senhaVisivel,
                         onToggleSenha = { senhaVisivel = !senhaVisivel },
                         confirmarVisivel = confirmarVisivel,
                         onToggleConfirmar = { confirmarVisivel = !confirmarVisivel },
                         selectedRole = selectedRole,
                         onSelectRole = { },
+                        errorMessage = authViewModel.errorMessage,
+                        nomeError = authViewModel.cadastroNomeError,
+                        emailError = authViewModel.cadastroEmailError,
+                        senhaError = authViewModel.cadastroSenhaError,
+                        confirmarSenhaError = authViewModel.cadastroConfirmarSenhaError,
+                        isLoading = authViewModel.isLoading,
+                        statusMessage = authViewModel.statusMessage,
                         onRegister = {
-                            if (senha.isNotBlank() && senha == confirmarSenha) {
-                                PreferencesManager.setUserRole(UserRole.ADMIN.value)
-                                onRegisterSuccess()
-                            }
+                            authViewModel.cadastrarAdministrador(nome, email, senha, confirmarSenha, onRegisterSuccess)
                         },
                         onBackToLogin = onBackToLogin
                     )
@@ -158,7 +200,13 @@ fun CadastroScreen(onRegisterSuccess: () -> Unit, onBackToLogin: () -> Unit) {
 }
 
 @Composable
-private fun BrandPanel(modifier: Modifier = Modifier, title: String, subtitle: String) {
+private fun BrandPanel(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String,
+    residentes: Int,
+    apartamentos: Int
+) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(32.dp),
@@ -185,11 +233,11 @@ private fun BrandPanel(modifier: Modifier = Modifier, title: String, subtitle: S
                             .background(Color.White.copy(alpha = 0.14f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(Res.drawable.Logo_SeCond_Dark_1),
+                        Image(
+                            painter = painterResource(Res.drawable.Logo_SeCond_Dark_2_removebg_preview),
                             contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(30.dp)
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.size(54.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(14.dp))
@@ -200,8 +248,8 @@ private fun BrandPanel(modifier: Modifier = Modifier, title: String, subtitle: S
                 Text(subtitle, color = Color(0xFFE0DBFF), fontSize = 14.sp, fontWeight = FontWeight.Medium)
 
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    StatChip(label = "Residentes", value = "2.5k+")
-                    StatChip(label = "Propriedades", value = "48")
+                    StatChip(label = "Residentes", value = residentes.toString())
+                    StatChip(label = "Apartamentos", value = apartamentos.toString())
                 }
             }
 
@@ -248,6 +296,13 @@ private fun RegisterPanel(
     onToggleConfirmar: () -> Unit,
     selectedRole: UserRole,
     onSelectRole: (UserRole) -> Unit,
+    errorMessage: String,
+    nomeError: String,
+    emailError: String,
+    senhaError: String,
+    confirmarSenhaError: String,
+    isLoading: Boolean,
+    statusMessage: String,
     onRegister: () -> Unit,
     onBackToLogin: () -> Unit
 ) {
@@ -270,9 +325,15 @@ private fun RegisterPanel(
                 onValueChange = onNomeChange,
                 label = { Text("Nome Completo") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = CrudDesign.primary) },
-                modifier = Modifier.fillMaxWidth().height(58.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = CrudDesign.fieldShape,
                 colors = crudOutlinedTextFieldColorsM3(),
+                isError = nomeError.isNotBlank(),
+                supportingText = if (nomeError.isNotBlank()) {
+                    { Text(nomeError) }
+                } else {
+                    null
+                },
                 singleLine = true
             )
 
@@ -281,9 +342,15 @@ private fun RegisterPanel(
                 onValueChange = onEmailChange,
                 label = { Text("E-mail") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = CrudDesign.primary) },
-                modifier = Modifier.fillMaxWidth().height(58.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = CrudDesign.fieldShape,
                 colors = crudOutlinedTextFieldColorsM3(),
+                isError = emailError.isNotBlank(),
+                supportingText = if (emailError.isNotBlank()) {
+                    { Text(emailError) }
+                } else {
+                    null
+                },
                 singleLine = true
             )
 
@@ -301,9 +368,15 @@ private fun RegisterPanel(
                     )
                 },
                 visualTransformation = if (senhaVisivel) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth().height(58.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = CrudDesign.fieldShape,
                 colors = crudOutlinedTextFieldColorsM3(),
+                isError = senhaError.isNotBlank(),
+                supportingText = if (senhaError.isNotBlank()) {
+                    { Text(senhaError) }
+                } else {
+                    null
+                },
                 singleLine = true
             )
 
@@ -321,21 +394,41 @@ private fun RegisterPanel(
                     )
                 },
                 visualTransformation = if (confirmarVisivel) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth().height(58.dp),
+                modifier = Modifier.fillMaxWidth(),
                 shape = CrudDesign.fieldShape,
                 colors = crudOutlinedTextFieldColorsM3(),
+                isError = confirmarSenhaError.isNotBlank(),
+                supportingText = if (confirmarSenhaError.isNotBlank()) {
+                    { Text(confirmarSenhaError) }
+                } else {
+                    null
+                },
                 singleLine = true
             )
 
             Text("Tipo de conta: Administrador", color = CrudDesign.textSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 
+            if (errorMessage.isNotBlank()) {
+                Text(errorMessage, color = CrudDesign.danger, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            }
+            if (statusMessage.isNotBlank()) {
+                Text(statusMessage, color = CrudDesign.textSecondary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            }
+
             Button(
                 onClick = onRegister,
+                enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth().height(54.dp),
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = CrudDesign.primary)
             ) {
-                Text("CADASTRAR", color = CrudDesign.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text(
+                    if (isLoading) "CADASTRANDO..." else "CADASTRAR",
+                    color = CrudDesign.textPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
             }
 
             OutlinedButton(

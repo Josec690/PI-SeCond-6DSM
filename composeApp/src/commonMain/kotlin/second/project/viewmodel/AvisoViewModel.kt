@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import second.project.model.Aviso
 import second.project.repository.RepositorioRemoto
+import second.project.validation.Validators
 
 class AvisoViewModel(private val repo: RepositorioRemoto) {
     var id by mutableStateOf("")
@@ -18,44 +19,70 @@ class AvisoViewModel(private val repo: RepositorioRemoto) {
     var autor by mutableStateOf("")
     var dataPublicacao by mutableStateOf("")
     var prioridade by mutableStateOf(false)
+    var mensagemErro by mutableStateOf("")
 
-    var listaAvisos = mutableStateListOf<Aviso>()
+    val listaAvisos = mutableStateListOf<Aviso>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun carregar() {
         scope.launch {
-            val dados = repo.listarAvisos()
-            listaAvisos.clear()
-            listaAvisos.addAll(dados)
+            runCatching { repo.listarAvisos() }
+                .onSuccess { dados ->
+                    listaAvisos.clear()
+                    listaAvisos.addAll(dados)
+                    mensagemErro = ""
+                }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel carregar avisos." }
         }
     }
 
-    fun gravar() {
+    fun gravar(onSuccess: () -> Unit = {}) {
+        val validation = Validators.firstError(
+            Validators.required("Titulo", titulo),
+            Validators.required("Mensagem", mensagem),
+            Validators.required("Categoria", categoria),
+            Validators.required("Autor", autor),
+            Validators.required("Data de publicacao", dataPublicacao),
+            Validators.optionalDate("Data de publicacao", dataPublicacao)
+        )
+        if (validation.isNotBlank()) {
+            mensagemErro = validation
+            return
+        }
+
         scope.launch {
-            repo.salvarAviso(
-                Aviso(
-                    id = id,
-                    titulo = titulo,
-                    mensagem = mensagem,
-                    categoria = categoria,
-                    autor = autor,
-                    dataPublicacao = dataPublicacao,
-                    prioridade = prioridade
+            runCatching {
+                repo.salvarAviso(
+                    Aviso(
+                        id = id,
+                        titulo = titulo.trim(),
+                        mensagem = mensagem.trim(),
+                        categoria = categoria.trim(),
+                        autor = autor.trim(),
+                        dataPublicacao = dataPublicacao.trim(),
+                        prioridade = prioridade
+                    )
                 )
-            )
-            limparCampos()
-            carregar()
+            }.onSuccess {
+                limparCampos()
+                carregar()
+                onSuccess()
+            }.onFailure {
+                mensagemErro = it.message ?: "Nao foi possivel gravar aviso."
+            }
         }
     }
 
     fun apagar(aid: String) {
         scope.launch {
-            repo.excluirAviso(aid)
-            carregar()
+            runCatching { repo.excluirAviso(aid) }
+                .onSuccess { carregar() }
+                .onFailure { mensagemErro = it.message ?: "Nao foi possivel apagar aviso." }
         }
     }
 
     fun editar(a: Aviso) {
+        mensagemErro = ""
         id = a.id
         titulo = a.titulo
         mensagem = a.mensagem
@@ -73,6 +100,6 @@ class AvisoViewModel(private val repo: RepositorioRemoto) {
         autor = ""
         dataPublicacao = ""
         prioridade = false
+        mensagemErro = ""
     }
 }
-
